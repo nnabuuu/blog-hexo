@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Getting Concurrent With ES6 Generators | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="#用generator实现并发（译）
+原文地址：http://davidwalsh.name/concurrent-generators
+ES6 Generators：全系列
+
+The Basics Of ES6 Generators
+Diving Deeper With ES6 Generators
+Going Async With ES6 Generators
+Getting Concurre">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Getting Concurrent With ES6 Generators">
+<meta property="og:url" content="http://nnabuuu.github.io/blog-hexo/2015/01/04/Getting-Concurrent-With-ES6-Generators/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="#用generator实现并发（译）
+原文地址：http://davidwalsh.name/concurrent-generators
+ES6 Generators：全系列
+
+The Basics Of ES6 Generators
+Diving Deeper With ES6 Generators
+Going Async With ES6 Generators
+Getting Concurre">
+<meta property="og:updated_time" content="2016-04-29T18:43:51.161Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Getting Concurrent With ES6 Generators">
+<meta name="twitter:description" content="#用generator实现并发（译）
+原文地址：http://davidwalsh.name/concurrent-generators
+ES6 Generators：全系列
+
+The Basics Of ES6 Generators
+Diving Deeper With ES6 Generators
+Going Async With ES6 Generators
+Getting Concurre">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/blog-hexo/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/blog-hexo/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/blog-hexo/">Home</a>
+        
+          <a class="main-nav-link" href="/blog-hexo/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://nnabuuu.github.io/blog-hexo"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Getting-Concurrent-With-ES6-Generators" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2015/01/04/Getting-Concurrent-With-ES6-Generators/" class="article-date">
+  <time datetime="2015-01-05T05:44:36.000Z" itemprop="datePublished">2015-01-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Getting Concurrent With ES6 Generators
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#用generator实现并发（译）</p>
+<p>原文地址：<a href="http://davidwalsh.name/concurrent-generators" target="_blank" rel="external">http://davidwalsh.name/concurrent-generators</a></p>
+<p>ES6 Generators：全系列</p>
+<ol>
+<li><a href="http://davidwalsh.name/es6-generators" target="_blank" rel="external">The Basics Of ES6 Generators</a></li>
+<li><a href="http://davidwalsh.name/es6-generators-dive" target="_blank" rel="external">Diving Deeper With ES6 Generators</a></li>
+<li><a href="http://davidwalsh.name/async-generators" target="_blank" rel="external">Going Async With ES6 Generators</a></li>
+<li><a href="http://davidwalsh.name/concurrent-generators" target="_blank" rel="external">Getting Concurrent With ES6 Generators</a></li>
+</ol>
+<p>如果你已经阅读并消化了本系列的第一、第二和第三章节，你应该对ES6 generator已经相当有把握了。希望你真正的被激发来开始用它们做一些事情。</p>
+<p>我们要探索的最后的话题是比较前沿的东西，它可能会让你的大脑有点混乱（老实的说，我的大脑仍然处于混乱状态）。所以慢慢的看完并且思考这些概念以及例子。并且还需要读一读其他关于这个话题的文章。</p>
+<p>你在这里所做的投入，会从一个长远的角度给你带来回报。我完全确信JS完美的异步能力的未来会来自于这些概念。</p>
+<h2 id="标准CSP（Communicating-Sequential-Processes）"><a href="#标准CSP（Communicating-Sequential-Processes）" class="headerlink" title="标准CSP（Communicating Sequential Processes）"></a>标准CSP（Communicating Sequential Processes）</h2><p>受限，我受到这个话题的激发完全是来自于<a href="http://github.com/swannodette" target="_blank" rel="external">David Nolen</a> <a href="http://twitter.com/swannodette" target="_blank" rel="external">@swannodette</a>。严肃的说，他所写得一切文章都值得一读。这里有一些可以让你起步的链接：</p>
+<ul>
+<li><a href="http://swannodette.github.io/2013/07/12/communicating-sequential-processes/" target="_blank" rel="external">“Communicating Sequential Processes”</a></li>
+<li><a href="http://swannodette.github.io/2013/08/24/es6-generators-and-csp/" target="_blank" rel="external">“ES6 Generators Deliver Go Style Concurrency”</a></li>
+<li><a href="http://swannodette.github.io/2013/07/31/extracting-processes/" target="_blank" rel="external">“Extracting Processes”</a></li>
+</ul>
+<p>好的，下面我就来讲一讲我在这个题目上的探索。我并不是从一个正式的Clojure背景转向JS的，我也没有GO或者ClojureScript相关的经验。我很快发现我迷失在这些文章中，并且我必须要做大量的实验和猜测来收集这些文章中有用的部分。</p>
+<p>在探索的过程中，我认为我已经学到了一些目标以及精神都想通的东西，但来自于并不是那么古板的思维方式。</p>
+<p>我试图要做的是简历一个简单的Go-风格的CSP（已经ClojureScript core.async）API，同时（我希望）保留大部分潜在的能力。当然，那些比我聪明的人完全有可能迅速地看到我目前为止探索过程中错过的部分。如果这牙膏的话，我希望我的探索能够继续进行下去，并且我会继续和我们分享我的启示！</p>
+<h2 id="（部分）分解CSP理论"><a href="#（部分）分解CSP理论" class="headerlink" title="（部分）分解CSP理论"></a>（部分）分解CSP理论</h2><p>CSP是讲些什么的？它提到的“communicating”、“Sequential”是什么？“Processes”又是什么？</p>
+<p>首先，CSP来自于<a href="http://www.usingcsp.com/" target="_blank" rel="external">Tony Hoare的书”Communicating Sequential Processes”</a>。这是一些厚重的CS理论的东西，但如果你有兴趣在学术范围有所建树的话，那么这是最好的开始的地方。当然我并不是要用一种深奥的、令人头痛的、CS的方式来讲述它。我会用一种非正式的方式来描述。</p>
+<p>所以，我们先从“sequential”这个词开始。这个部分你应该已经非常熟悉了。它所谈论的是另一种单线程行为以及我们用ES6 generators实现的同步风格代码的方式。</p>
+<p>回忆一下，generator是的语法是像这样的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> x = <span class="keyword">yield</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">var</span> y = <span class="keyword">yield</span> x;</span><br><span class="line">    <span class="keyword">var</span> z = <span class="keyword">yield</span> (y * <span class="number">2</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>每一条语句都是有序的（按照顺序）执行，每次执行一条。<code>yield</code>关键词表明代码中有可能发生堵塞暂停（只堵塞当前generator自己代码，并不堵塞外部程序！）的地方，但是这并不改变<code>*main()</code>内部自上而下的代码处理顺序。很简单，是吧？</p>
+<p>下面，让我们谈谈“processes”，这又是关于些什么的呢？</p>
+<p>从本质上来说，一个generator就像是一个虚拟“进程”。它是一块自我包含的程序，它可以，如果JS允许这样做的话，完全和程序剩余部分并发执行。</p>
+<p>事实上，这样说有一点点问题。如果generator访问共享内存（也就是说，如果它访问它自身内部本地变量中的“free viriables”），这就不是独立的了。但是让我们先假设一下我们的generator函数并不访问外部变量（因此在函数式编程中我们会把它叫做一个“combinator”）。这样它就可以在理论上以自己单独进程的方式运行。</p>
+<p>但是上面我们所说的是“processes” – 复数形式 – 因为有一点很重要的是，同时有两个或多个进程在运行。换句话说，两个或更多的generator进行配对，一般来说是进行协作以便完成更大的任务。</p>
+<p>为什么要分离generators而不仅仅用一个呢？最重要的原因是：<strong>内容隔离</strong>。如果你可以将任务XYZ分解为各个子任务X、Y和Z，那么它们的实现代码会更加容易看懂和维护。</p>
+<p>当你将一个函数<code>function XYZ()</code>分解为<code>X()</code>，<code>Y()</code>和<code>Z()</code>也是同样的道理，这里<code>X()</code>会调用<code>Y()</code>，<code>Y()</code>会调用<code>Z()</code>。我们将函数分解为单独的子函数来进行更好的代码隔离，使我们的代码更容易维护。</p>
+<p><strong>我们可以对多个generator做同样的事情。</strong></p>
+<p>最后我们来说一说“communicating”。这又是什么呢？这是从上面两个词推论出来的 – 协作 – 如果generator需要一起工作，它们需要一种通信渠道（不仅仅是访问共享词法作用域中的内容，而是实实在在的能够进行排他性访问的共享通信渠道）。</p>
+<p>这个通信渠道是用来发送什么的呢？可以发送无论任何你需要发送的东西（数字、字符串、等等）。事实上，你甚至不需要真正的往通道中发送数据以便使用该通道进行通信。“Communication”可以是简单的协调 – 就像将控制权从一个地方转移到另一个地方。</p>
+<p>为什么我们要转移控制权？主要的原因是JS是单线程的，并且在任何时刻它们中只有一个可以处于活动状态。其余的都处在暂停执行的状态，也就意味着它们处在任务的中途阶段，而只是暂停了，它们在等待必要时恢复。</p>
+<p>任意独立的“进程”可以神奇的合作和交流，这似乎并不现实。松散耦合的目标是相当令人敬佩的，但它其实不切实际。</p>
+<p>相反，似乎所有成功的CSP实现都是一种对某个特定领域内现有已知逻辑集合的因式分解，它的每一个部分都是特地为其他部分的协作而设计的。</p>
+<p>或许我完全错了，但是我还没有看到任何方式让两个随机的generator函数可以非常容易的粘在一起变成一个CSP配对。他们都需要被设计成为另一方工作，接受同样的通信协议，等等。</p>
+<h2 id="JS中的CSP"><a href="#JS中的CSP" class="headerlink" title="JS中的CSP"></a>JS中的CSP</h2><p>这里有几个已经应用在JS中了的CSP理论。</p>
+<p>我们之前提到的Dabid Nolen创建了几个有趣的项目，包括<a href="https://github.com/swannodette/om" target="_blank" rel="external">Om</a>以及<a href="http://www.hakkalabs.co/articles/core-async-a-clojure-library/" target="_blank" rel="external">core.async</a>。<a href="http://koajs.com/" target="_blank" rel="external">Koa</a>库(为node.js创建)有一些非常有趣的实现，主要是通过它的<code>use(..)</code>方法。另一个对core.async/Go CSP API非常“忠诚”的库是<a href="https://github.com/ubolonton/js-csp" target="_blank" rel="external">js-csp</a>。</p>
+<p>你应该确切的研究一下这些伟大的项目来看看不同的实现方式以及关于如何探索JS中的CSP的例子。</p>
+<h2 id="asynquence的runner-设计CSP"><a href="#asynquence的runner-设计CSP" class="headerlink" title="asynquence的runner(..): 设计CSP"></a>asynquence的<code>runner(..)</code>: 设计CSP</h2><p>由于我一直以来都在积极地探索如何将CSP模式的并发性应用到我自己的JS代码中，因此为我的异步流控制库<a href="http://github.com/getify/asynquence" target="_blank" rel="external">asynquence</a>扩展CSP能力是非常自然的。</p>
+<p>我已经有了<code>runner(..)</code>功能插件来处理generator的异步运行（见 <a href="http://davidwalsh.name/async-generators/#rungenerator-library-utility" target="_blank" rel="external">“Part 3: Going Async With Generators”</a>），所以在我看来，它可以很容易地扩展为用<a href="https://github.com/getify/asynquence/tree/master/contrib#csp-style-concurrency" target="_blank" rel="external">类-CSP的方式</a>同时处理多个generator。</p>
+<p>我所要解决的第一个问题：你怎么知道下面是哪一个generator要获得控制权？</p>
+<p>给每个generator赋予一个ID并让其他generator知晓以便它们将消息或者控制权传递给另一个进程的方式未免太繁琐和笨重了。在经过多次试验之后，我选定了一个简单的round-robin的调度方法。因此如果你将三个generator A、B和C匹配起来之后，A会先获得控制权，然后B在A进行yield时接管，然后C在B进行yield时接管，然后再到达A，以此类推。</p>
+<p>但是我们要怎样才能真正的传递控制呢？需要一个明确的API来描述它吗？再一次地，经过多次试验之后，我使用了一个更加隐式的实现方式，它和<a href="http://koajs.com/#cascading" target="_blank" rel="external">Koa的实现方式</a>（碰巧）很相似：每个generator获得一个共享“token”的引用 – `yield它以便传递控制权转移的信号。</p>
+<p>另一个问题则是消息通道应该是什么样的。一方面，你有一个非常确定了的API就像core.async以及js-csp中的那些（<code>put(..)</code>以及<code>take(..)</code>）。在我自己的经验中，我则倾向于另一个方面：一个不那么正式的方法（它甚至不是一个API，只是一个共享的数据结构就像<code>array</code>这样），这看起来就够了。</p>
+<p>我决定使用一个数组(称为<code>messages</code>)这样你便可以大刀阔斧的决定你要如何来使用它。可以将消息<code>push()</code>进入这个数组，也可以从这个数组中<code>pop()</code>消息，指定数组中会话相关的元素组建不同消息，并可以在这些空间内创建更加复杂的数据结构，等等。</p>
+<p>我的设想是有些任务只需要非常简单的消息传递，而另外一些会非常的复杂，因此以其将简单的内容变得复杂，不如将消息通道变得正式而使其成为一个<code>array</code>（这样就不需要除了<code>array</code>自身以外的API了）。将消息传递机制转化为其他形式是非常容易的，你会发现它的妙用（见我们接下来会瘫倒的状态机的例子）。</p>
+<p>最后，我留意到这些generator“进程”仍然可以从普通generator的异步能力中获益。换句话说，如果你<code>yield</code>出一个Promise（或asynquence sequence）而不是一个控制token，<code>runner(..)</code>机制将会暂停并等待将来的结果值而不会<strong>移交控制权</strong> – 相反，它会将结果返回给当前的进程（generator）并使它继续享有控制权。</p>
+<p>因此最后一点备受争议的应该是（如果我的想法都是正确的话），它和空间内的其它库都不一样。看起来真正的CSP对我这样的实现方式嗤之以鼻。但是我认为我的提议最终会变得非常非常有用。</p>
+<h2 id="一个简单的FooBar示例"><a href="#一个简单的FooBar示例" class="headerlink" title="一个简单的FooBar示例"></a>一个简单的FooBar示例</h2><p>好的，我们说够了理论，现在让我们来看看代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Note: omitting fictional `multBy20(..)` and</span></span><br><span class="line"><span class="comment">// `addTo2(..)` asynchronous-math functions, for brevity</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span>(<span class="params">token</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// grab message off the top of the channel</span></span><br><span class="line">    <span class="keyword">var</span> value = token.messages.pop(); <span class="comment">// 2</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// put another message onto the channel</span></span><br><span class="line">    <span class="comment">// `multBy20(..)` is a promise-generating function</span></span><br><span class="line">    <span class="comment">// that multiplies a value by `20` after some delay</span></span><br><span class="line">    token.messages.push( <span class="keyword">yield</span> multBy20( value ) );</span><br><span class="line"></span><br><span class="line">    <span class="comment">// transfer control</span></span><br><span class="line">    <span class="keyword">yield</span> token;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// a final message from the CSP run</span></span><br><span class="line">    <span class="keyword">yield</span> <span class="string">"meaning of life: "</span> + token.messages[<span class="number">0</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">bar</span>(<span class="params">token</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// grab message off the top of the channel</span></span><br><span class="line">    <span class="keyword">var</span> value = token.messages.pop(); <span class="comment">// 40</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// put another message onto the channel</span></span><br><span class="line">    <span class="comment">// `addTo2(..)` is a promise-generating function</span></span><br><span class="line">    <span class="comment">// that adds value to `2` after some delay</span></span><br><span class="line">    token.messages.push( <span class="keyword">yield</span> addTo2( value ) );</span><br><span class="line"></span><br><span class="line">    <span class="comment">// transfer control</span></span><br><span class="line">    <span class="keyword">yield</span> token;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>OK，现在我们有两个generator“进程”， <code>*foo()</code>和<code>*bar()</code>。你能留意到他们都处理了<code>token</code>对象（当然你也可以给它们任意命名）。<code>token</code>的<code>messages</code>熟悉是我们的共享消息通道。在初始时，它们充满了我们在初始化CSP运行时所产生的消息（见下文）。</p>
+<p><code>yield token</code>显示地将控制权传递给“下一个”generator（通过round-robin策略）。然而，<code>yield multiBy20(value)</code>以及<code>yield addTo2(value)</code>都在yield promise（从这些虚构的延迟数学函数中），这表明generator在这一点会暂停知道promise结束。在promise结束时，当前处于控制的generator会获取返回值并继续下去。</p>
+<p>无论最后的<code>yield</code>返回值是什么，在本例中是<code>yield &quot;meaning of...</code>表达式，它都是我们的CSP运行完成的消息（见下文）。</p>
+<p>现在我们有了两个CSP进程generator，我们要如何执行它们呢？使用asynquence吧：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// start out a sequence with the initial message value of `2`</span></span><br><span class="line">ASQ( <span class="number">2</span> )</span><br><span class="line"></span><br><span class="line"><span class="comment">// run the two CSP processes paired together</span></span><br><span class="line">.runner(</span><br><span class="line">    foo,</span><br><span class="line">    bar</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// whatever message we get out, pass it onto the next</span></span><br><span class="line"><span class="comment">// step in our sequence</span></span><br><span class="line">.val( <span class="function"><span class="keyword">function</span>(<span class="params">msg</span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log( msg ); <span class="comment">// "meaning of life: 42"</span></span><br><span class="line">&#125; );</span><br></pre></td></tr></table></figure>
+<p>显然，这只是一个简单的示例。但是我认为它准确的解释了这个概念。</p>
+<p>现在或许你该<a href="http://jsbin.com/tunec/2/edit?js,console" target="_blank" rel="external">自己试一试</a>了（试着将返回值进行链式处理！）来确保你已经理解了这些概念并且能够编写你自己的代码了！</p>
+<h2 id="另一个玩具Demo的例子"><a href="#另一个玩具Demo的例子" class="headerlink" title="另一个玩具Demo的例子"></a>另一个玩具Demo的例子</h2><p>让我们用一个经典的CSP例子来试一试，但是让我们从我所观测到的简单部分开始，而不是像通常人们做的那样从一个学术的角度开始。</p>
+<p><strong>Ping-pong</strong>。很有趣的运动是吧？这是我最喜欢的运动。</p>
+<p>让我们设想一下你已经实现了进行一次乒乓球比赛的代码。你用一个循环来运行，然后你有两块代码（例如，用一个<code>if</code>或者<code>switch</code>实现的分支）每一块代表者一名选手。</p>
+<p>你的代码运行得很好，你的游戏就看起来像是一个真正的乒乓球比赛一样！</p>
+<p>但是我们之前看到的是CSP在什么方面非常有用？<strong>逻辑隔离</strong>。我们在乒乓球运动中要隔离的逻辑是？这两名选手！</p>
+<p>因此，我们可以，站在一个非常高的角度，来给两个“进程”（generators）建模，每一个代表一名选手。随着我们的深入，我们会发现这些用来在两名选手之间传递控制权的“胶水代码”其自身是一个task，并且它的代码可以被放到第三个generator中，这里我们可以将其建模为一个裁判。</p>
+<p>我们会过滤掉所有的领域相关问题，例如得分、赛制、物理学、策略、AI、控制、等等。我们唯一关心的只是模拟来回击球（这也就是我们的CSP控制权转移的描述）。</p>
+<p>想看看Demo吗？<a href="http://jsbin.com/qutabu/1/edit?js,output" target="_blank" rel="external">点击这里运行</a>（注：你需要使用最新版本的FF或者Chrome，它们支持ES6 JavaScript，来看到generator是如何运作的）。</p>
+<p>好，下面我们逐条讲解我们的代码。</p>
+<p>受限，asynquence sequence看起来长什么样呢？</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">ASQ(</span><br><span class="line">    [<span class="string">"ping"</span>,<span class="string">"pong"</span>], <span class="comment">// player names</span></span><br><span class="line">    &#123; hits: <span class="number">0</span> &#125; <span class="comment">// the ball</span></span><br><span class="line">)</span><br><span class="line">.runner(</span><br><span class="line">    referee,</span><br><span class="line">    player,</span><br><span class="line">    player</span><br><span class="line">)</span><br><span class="line">.val( <span class="function"><span class="keyword">function</span>(<span class="params">msg</span>)</span>&#123;</span><br><span class="line">    message( <span class="string">"referee"</span>, msg );</span><br><span class="line">&#125; );</span><br></pre></td></tr></table></figure>
+<p>我们将序列初始化为两条消息：<code>[&quot;ping&quot;, &quot;pong&quot;]</code>和<code>{hits: 0}</code>。我们马上就会用到它们。</p>
+<p>然后，我们设置CSP运行3个进程（通过轮询的方式）：一个<code>*referee()</code>和两个<code>*player()</code>实例。</p>
+<p>比赛最后的消息在我们的序列中不停传输，并最后作为裁判的消息被打印出来。</p>
+<p>裁判的实现：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">referee</span>(<span class="params">table</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">var</span> alarm = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// referee sets an alarm timer for the game on</span></span><br><span class="line">    <span class="comment">// his stopwatch (10 seconds)</span></span><br><span class="line">    setTimeout( <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123; alarm = <span class="literal">true</span>; &#125;, <span class="number">10000</span> );</span><br><span class="line"></span><br><span class="line">    <span class="comment">// keep the game going until the stopwatch</span></span><br><span class="line">    <span class="comment">// alarm sounds</span></span><br><span class="line">    <span class="keyword">while</span> (!alarm) &#123;</span><br><span class="line">        <span class="comment">// let the players keep playing</span></span><br><span class="line">        <span class="keyword">yield</span> table;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// signal to players that the game is over</span></span><br><span class="line">    table.messages[<span class="number">2</span>] = <span class="string">"CLOSED"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// what does the referee say?</span></span><br><span class="line">    <span class="keyword">yield</span> <span class="string">"Time's up!"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我把控制token称为<code>table</code>以便和问题的domain（乒乓球）相匹配。语义上让一个选手击球时”yield the table”给另一个选手相当恰当，不是吗？</p>
+<p><code>while</code>循环<code>*referee()</code>只是不停的yield <code>table</code>回给选手只要它的手表还没有计时结束。当结束时，它会宣布<code>&quot;Time&#39;s up!&quot;</code></p>
+<p>现在，让我们来看看<code>*player()</code> generator（我们使用了两个实例）。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">player</span>(<span class="params">table</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> name = table.messages[<span class="number">0</span>].shift();</span><br><span class="line">    <span class="keyword">var</span> ball = table.messages[<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (table.messages[<span class="number">2</span>] !== <span class="string">"CLOSED"</span>) &#123;</span><br><span class="line">        <span class="comment">// hit the ball</span></span><br><span class="line">        ball.hits++;</span><br><span class="line">        message( name, ball.hits );</span><br><span class="line"></span><br><span class="line">        <span class="comment">// artificial delay as ball goes back to other player</span></span><br><span class="line">        <span class="keyword">yield</span> ASQ.after( <span class="number">500</span> );</span><br><span class="line"></span><br><span class="line">        <span class="comment">// game still going?</span></span><br><span class="line">        <span class="keyword">if</span> (table.messages[<span class="number">2</span>] !== <span class="string">"CLOSED"</span>) &#123;</span><br><span class="line">            <span class="comment">// ball's now back in other player's court</span></span><br><span class="line">            <span class="keyword">yield</span> table;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    message( name, <span class="string">"Game over!"</span> );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第一个选手从数组中获取他自己的名字（<code>&quot;ping&quot;</code>），然后第二个选手获取他的名字（<code>“pong”</code>），因此他们可以同时辨别双方。双方都保留一个对共享<code>ball</code>对象的引用（包含了<code>hits</code>计数器）。</p>
+<p>当选手还未听到裁判结束的消息时，他们通过将计数器<code>hits</code>增加1的方式”击打”<code>ball</code>（并且输出一条消息进行公告），然后他们等待500毫秒（只是来模拟一下球速并没有达到光速啦！）</p>
+<p>如果比赛仍在继续，他们会”yield table”回到另一名选手中。</p>
+<p>就是这样啦！</p>
+<p><a href="http://jsbin.com/qutabu/1/edit?js,output" target="_blank" rel="external">看看这里的Demo代码</a>，通过将所有的代码放在一起看看它们是如何共同工作的。</p>
+<h2 id="状态机：Generator协作"><a href="#状态机：Generator协作" class="headerlink" title="状态机：Generator协作"></a>状态机：Generator协作</h2><p>我们最后一个例子：定义一个<a href="http://en.wikipedia.org/wiki/Finite-state_machine" target="_blank" rel="external">状态机</a>作为一系列generator的协同程序，它们有一个简单的helper驱动。</p>
+<p><a href="http://jsbin.com/luron/1/edit?js,console" target="_blank" rel="external">Demo</a>（用最新的FF或者Chrome打开）</p>
+<p>首先，让我们顶一个一个help函数来控制我们的有限状态句柄：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">state</span>(<span class="params">val,handler</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// make a coroutine handler (wrapper) for this state</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>*(<span class="params">token</span>) </span>&#123;</span><br><span class="line">        <span class="comment">// state transition handler</span></span><br><span class="line">        <span class="function"><span class="keyword">function</span> <span class="title">transition</span>(<span class="params">to</span>) </span>&#123;</span><br><span class="line">            token.messages[<span class="number">0</span>] = to;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// default initial state (if none set yet)</span></span><br><span class="line">        <span class="keyword">if</span> (token.messages.length &lt; <span class="number">1</span>) &#123;</span><br><span class="line">            token.messages[<span class="number">0</span>] = val;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// keep going until final state (false) is reached</span></span><br><span class="line">        <span class="keyword">while</span> (token.messages[<span class="number">0</span>] !== <span class="literal">false</span>) &#123;</span><br><span class="line">            <span class="comment">// current state matches this handler?</span></span><br><span class="line">            <span class="keyword">if</span> (token.messages[<span class="number">0</span>] === val) &#123;</span><br><span class="line">                <span class="comment">// delegate to state handler</span></span><br><span class="line">                <span class="keyword">yield</span> *handler( transition );</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// transfer control to another state handler?</span></span><br><span class="line">            <span class="keyword">if</span> (token.messages[<span class="number">0</span>] !== <span class="literal">false</span>) &#123;</span><br><span class="line">                <span class="keyword">yield</span> token;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该<code>state(..)</code> helper工具方法创建了一个为一个具体的状态值准备的<a href="http://davidwalsh.name/es6-generators-dive#delegating-generators" target="_blank" rel="external">delegating-generator</a>包装器，它会自动的运行状态机，并且将控制权在每个状态间进行传递。</p>
+<p>出于惯例，我决定共享<code>token.messages[0]</code>位置来保存当前状态机的状态。这表明你可以从之前的步骤中传递一条消息作为初始状态。但是如果没有这样的初始消息被传递的话，我们会简单的将第一个状态定义为我们的初始状态。同样出于惯例，最终状态被断言为<code>false</code>。这很容易实现：</p>
+<p>状态值可以是任何种类的值：<code>number</code>s, <code>string</code>s，等等。只要这个值能被<code>===</code>处理，你就可以使用它来做你的状态。</p>
+<p>在下面这个例子中，我展示了一个状态机从4个<code>number</code>形式的状态值之间进行转化，采用这种顺序<code>1 -&gt; 4 -&gt; 3 -&gt; 2</code>。为了demo的目的，它也会进行计数以便进行不止一次的转换。当我们的generator状态机最终到达终止位（<code>false</code>）时，<em>asynquence</em>序列会移动到下一个步骤，如你所期待的那样。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// counter (for demo purposes only)</span></span><br><span class="line"><span class="keyword">var</span> counter = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">ASQ( <span class="comment">/* optional: initial state value */</span> )</span><br><span class="line"></span><br><span class="line"><span class="comment">// run our state machine, transitions: 1 -&gt; 4 -&gt; 3 -&gt; 2</span></span><br><span class="line">.runner(</span><br><span class="line"></span><br><span class="line">    <span class="comment">// state `1` handler</span></span><br><span class="line">    state( <span class="number">1</span>, <span class="function"><span class="keyword">function</span>*(<span class="params">transition</span>)</span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log( <span class="string">"in state 1"</span> );</span><br><span class="line">        <span class="keyword">yield</span> ASQ.after( <span class="number">1000</span> ); <span class="comment">// pause state for 1s</span></span><br><span class="line">        <span class="keyword">yield</span> transition( <span class="number">4</span> ); <span class="comment">// goto state `4`</span></span><br><span class="line">    &#125; ),</span><br><span class="line"></span><br><span class="line">    <span class="comment">// state `2` handler</span></span><br><span class="line">    state( <span class="number">2</span>, <span class="function"><span class="keyword">function</span>*(<span class="params">transition</span>)</span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log( <span class="string">"in state 2"</span> );</span><br><span class="line">        <span class="keyword">yield</span> ASQ.after( <span class="number">1000</span> ); <span class="comment">// pause state for 1s</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// for demo purposes only, keep going in a</span></span><br><span class="line">        <span class="comment">// state loop?</span></span><br><span class="line">        <span class="keyword">if</span> (++counter &lt; <span class="number">2</span>) &#123;</span><br><span class="line">            <span class="keyword">yield</span> transition( <span class="number">1</span> ); <span class="comment">// goto state `1`</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// all done!</span></span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">yield</span> <span class="string">"That's all folks!"</span>;</span><br><span class="line">            <span class="keyword">yield</span> transition( <span class="literal">false</span> ); <span class="comment">// goto terminal state</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125; ),</span><br><span class="line"></span><br><span class="line">    <span class="comment">// state `3` handler</span></span><br><span class="line">    state( <span class="number">3</span>, <span class="function"><span class="keyword">function</span>*(<span class="params">transition</span>)</span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log( <span class="string">"in state 3"</span> );</span><br><span class="line">        <span class="keyword">yield</span> ASQ.after( <span class="number">1000</span> ); <span class="comment">// pause state for 1s</span></span><br><span class="line">        <span class="keyword">yield</span> transition( <span class="number">2</span> ); <span class="comment">// goto state `2`</span></span><br><span class="line">    &#125; ),</span><br><span class="line"></span><br><span class="line">    <span class="comment">// state `4` handler</span></span><br><span class="line">    state( <span class="number">4</span>, <span class="function"><span class="keyword">function</span>*(<span class="params">transition</span>)</span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log( <span class="string">"in state 4"</span> );</span><br><span class="line">        <span class="keyword">yield</span> ASQ.after( <span class="number">1000</span> ); <span class="comment">// pause state for 1s</span></span><br><span class="line">        <span class="keyword">yield</span> transition( <span class="number">3</span> ); <span class="comment">// goto state `3`</span></span><br><span class="line">    &#125; )</span><br><span class="line"></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// state machine complete, so move on</span></span><br><span class="line">.val(<span class="function"><span class="keyword">function</span>(<span class="params">msg</span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log( msg );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>应该很容易看出这里将发生什么。</p>
+<p><code>yield ASQ.after(1000)</code>表明这些generator可以做任何基于异步流的promise/sequence操作，就像我们之前看到的那样。<code>yield transition(..)</code>是我们如何转移到一个新的状态上。</p>
+<p>我们前面的<code>state(..)</code> helper实际上做了处理<code>yield*</code><a href="http://davidwalsh.name/es6-generators-dive#delegating-generators" target="_blank" rel="external">代理</a>以及状态转换的复杂工作，是的我们的状态句柄可以以一种非常简单和自然的格式进行编写。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>CSP的关键在于将两个或多个generator“进程”结合在一起，给予他们一个共享的通信渠道，以及一个它们之前传递控制权的方法。</p>
+<p>JS中非常多的库都或多或少的有一些正式的实现，它们基本符合Go/Clojure/ClojureScript的API和语法。所有这些库的背后都有一些非常聪明的开发者，并且他们对于今后的研究都是一笔巨大的财富。</p>
+<p><a href="http://github.com/getify/asynquence" target="_blank" rel="external">asynquence</a>尝试了一种非正式的实现方式但仍然希望它能满足这个机制。如果没有别的，asynquence的<code>runner(..)</code>使上手使用CSP风格的generator非常简单，你可以进行尝试并且学习。</p>
+<p>然而最好的部分仍然是asynquence CSP可以和其他异步功能（promise、generators、控制流等等）无缝结合，你可以使用你所拥有的任何工具，都在这样一个小小的库里。</p>
+<p>在过去的4篇文章中我们已经讨论了相当多的关于generator的细节。我希望你对此感到兴奋并受到启发去探索如何改变你自己的JS代码！你会用generator来做些什么呢？</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2015/01/04/Getting-Concurrent-With-ES6-Generators/" data-id="cirfvhfn30002bknbkxatucdf" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/generator-translation/">generator translation</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/blog-hexo/2015/10/31/Tail-Recursion-in-Haskell/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Tail Recursion in Haskell
+        
+      </div>
+    </a>
+  
+  
+    <a href="/blog-hexo/2014/12/26/Going-Async-With-ES6-Generators/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Going Async With ES6 Generators</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Haskell/">Haskell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/NodeJS/">NodeJS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Translation/">Translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-async-translation/">generator async translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-translation/">generator translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/jison/">jison</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/js-generator-tanslation/">js, generator, tanslation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/blog-hexo/tags/Haskell/" style="font-size: 10px;">Haskell</a> <a href="/blog-hexo/tags/NodeJS/" style="font-size: 15px;">NodeJS</a> <a href="/blog-hexo/tags/Translation/" style="font-size: 10px;">Translation</a> <a href="/blog-hexo/tags/docker/" style="font-size: 10px;">docker</a> <a href="/blog-hexo/tags/generator-async-translation/" style="font-size: 10px;">generator async translation</a> <a href="/blog-hexo/tags/generator-translation/" style="font-size: 10px;">generator translation</a> <a href="/blog-hexo/tags/jison/" style="font-size: 15px;">jison</a> <a href="/blog-hexo/tags/js-generator-tanslation/" style="font-size: 10px;">js, generator, tanslation</a> <a href="/blog-hexo/tags/translation/" style="font-size: 20px;">translation</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/11/">November 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/10/">October 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/08/">August 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/07/">July 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/06/">June 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/blog-hexo/2016/08/03/fix-docker-x509-error/">fix-docker-x509-error</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/29/Parsing-text-table-with-jison-3/">Parsing-text-table-with-jison-3</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/28/Parsing-text-table-with-jison-2/">Parsing-text-table-with-jison-2</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/21/Parsing-text-table-with-jison/">Parsing-text-table-with-jison</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2015/10/31/Tail-Recursion-in-Haskell/">Tail Recursion in Haskell</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 Xiaochen Nie<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/blog-hexo/" class="mobile-nav-link">Home</a>
+  
+    <a href="/blog-hexo/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/blog-hexo/fancybox/jquery.fancybox.css">
+  <script src="/blog-hexo/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/blog-hexo/js/script.js"></script>
+
+  </div>
+</body>
+</html>

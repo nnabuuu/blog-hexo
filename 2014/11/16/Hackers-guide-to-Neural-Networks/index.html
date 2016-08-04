@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>神经网络骇客指南（翻译中） | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="原文见：http://karpathy.github.io/neuralnets/
+##神经网络骇客指南（译）
+各位好，我是一名斯坦福的计算机科学的博士。作为我研究的一部分，我已经在深度学习上研究了好几年，我有几个“pet project”，其中一个是ConvNetJS - 一个用来训练神经网络的Javascript库。Javascript允许一个人轻松地将现在所发生的事情可视化，并且可以实现多">
+<meta property="og:type" content="article">
+<meta property="og:title" content="神经网络骇客指南（翻译中）">
+<meta property="og:url" content="http://nnabuuu.github.io/blog-hexo/2014/11/16/Hackers-guide-to-Neural-Networks/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="原文见：http://karpathy.github.io/neuralnets/
+##神经网络骇客指南（译）
+各位好，我是一名斯坦福的计算机科学的博士。作为我研究的一部分，我已经在深度学习上研究了好几年，我有几个“pet project”，其中一个是ConvNetJS - 一个用来训练神经网络的Javascript库。Javascript允许一个人轻松地将现在所发生的事情可视化，并且可以实现多">
+<meta property="og:image" content="http://nnabuuu.github.io/blog-hexo/img/Hacker-s-guide-to-Neural-Networks/1.png">
+<meta property="og:updated_time" content="2016-04-29T18:43:51.164Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="神经网络骇客指南（翻译中）">
+<meta name="twitter:description" content="原文见：http://karpathy.github.io/neuralnets/
+##神经网络骇客指南（译）
+各位好，我是一名斯坦福的计算机科学的博士。作为我研究的一部分，我已经在深度学习上研究了好几年，我有几个“pet project”，其中一个是ConvNetJS - 一个用来训练神经网络的Javascript库。Javascript允许一个人轻松地将现在所发生的事情可视化，并且可以实现多">
+<meta name="twitter:image" content="http://nnabuuu.github.io/blog-hexo/img/Hacker-s-guide-to-Neural-Networks/1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/blog-hexo/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/blog-hexo/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/blog-hexo/">Home</a>
+        
+          <a class="main-nav-link" href="/blog-hexo/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://nnabuuu.github.io/blog-hexo"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Hackers-guide-to-Neural-Networks" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2014/11/16/Hackers-guide-to-Neural-Networks/" class="article-date">
+  <time datetime="2014-11-16T21:51:07.000Z" itemprop="datePublished">2014-11-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      神经网络骇客指南（翻译中）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>原文见：<a href="http://karpathy.github.io/neuralnets/" target="_blank" rel="external">http://karpathy.github.io/neuralnets/</a></p>
+<p>##神经网络骇客指南（译）</p>
+<p>各位好，我是一名<a href="http://cs.stanford.edu/people/karpathy/" target="_blank" rel="external">斯坦福的计算机科学的博士</a>。作为我研究的一部分，我已经在深度学习上研究了好几年，我有几个“pet project”，其中一个是<a href="http://convnetjs.com/" target="_blank" rel="external">ConvNetJS</a> - 一个用来训练神经网络的Javascript库。Javascript允许一个人轻松地将现在所发生的事情可视化，并且可以实现多样的参数选择设置，但是我仍然经常听到人们想要一些更加彻底的话题。这篇文章（我打算慢慢地写到几个章节那么长）是我一份谦逊地尝试。我把它放在网上而不是以一个PDF文件的形式呈现是因为，所有的图书都应该这样，并且最终希望它能包括一些动画和演示。</p>
+<p>我对神经网络的个人经验是：当我抛开一切整篇、密集的反向传播方程的推导，而仅仅开始写代码时，一切都清晰多了。因此这个教程会包含<strong>非常少的数学</strong>(我不认为这是有必要的，而且有些时候会混淆一些简单的概念)。由于我的背景是计算机科学以及物理，我会以<strong>骇客的角度</strong>来看待问题。我会围绕着代码以及物理直觉而不是数学推导来展示。基本上我会以一种“我刚开始学习时希望被那样教导”的方式努力地呈现算法。</p>
+<pre><code>“...当我开始编写代码时一切都清晰多了。”
+</code></pre><p>你可能会想急切地跳进去学习神经网络、反向传播、它们如何能应用于数据集上、等等。但是在我们到达那里之前，我想先让我们忘掉这一切。让我们后退一步，明白什么是真正的核心。让我们从元电路开始谈起。</p>
+<p>###第一章：元电路</p>
+<p>在我看来，思考神经网络的最佳方式是将其比作元电路。在这里，实际的值（而不是布尔值<code>{0,1}</code>）沿着边沿“流动”并且在门出交汇。但是不同于门电路的<code>与</code>、<code>或</code>、<code>非</code>等，我们的二进制门包含例如<code>*</code>（乘）、<code>+</code>（加）、<code>max</code>或者一元门例如<code>exp</code>等等。不同于基本的布尔电路，我们最终也会有<strong>gradients</strong>在同样的边沿流动，但是是向相反的方向。这已经有点超前了，我们还是先专注一下，从简单的开始。</p>
+<h4 id="基本情况：电路中的单门"><a href="#基本情况：电路中的单门" class="headerlink" title="基本情况：电路中的单门"></a>基本情况：电路中的单门</h4><p>让我们先考虑一个单一的、简单的、包含一个门的电路。示例如下：</p>
+<p><img src="/img/Hacker-s-guide-to-Neural-Networks/1.png" alt="simple circuit with one gate"></p>
+<p>这个电路接受两个实际值<code>x</code>和<code>y</code>并且在<code>*</code>门中计算<code>x * y</code>。 Javascript的版本会非常简单，看起来像这样：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> forwardMultiplyGate = <span class="function"><span class="keyword">function</span>(<span class="params">x, y</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> x * y;</span><br><span class="line">&#125;;</span><br><span class="line">forwardMultiplyGate(<span class="number">-2</span>, <span class="number">3</span>); <span class="comment">// returns -6. Exciting.</span></span><br><span class="line"><span class="string">``</span><span class="string">`	</span><br><span class="line">以数学的形式我们可以认为这个门实现了函数：</span><br><span class="line"></span><br><span class="line">	f(x, y) = x * y</span><br><span class="line"></span><br><span class="line">在这个例子中，我们所有的门都会接受一个或两个输入，并产生一个**单一**的输出值。</span><br><span class="line"></span><br><span class="line">##### 目标</span><br><span class="line"></span><br><span class="line">我们在学习时所感兴趣的问题看起来像下面这样：</span><br><span class="line"></span><br><span class="line">1.	我们为一个已知电路提供一些具体的输入（例如 `</span>x = <span class="number">-2</span><span class="string">`，`</span>y = <span class="number">3</span><span class="string">`）</span><br><span class="line">2.	电路计算出一个输出值（例如 `</span><span class="number">-6</span><span class="string">`）</span><br><span class="line">3.	那么问题的核心变为：我们如何轻微的改变输入以便增加输出？</span><br><span class="line"></span><br><span class="line">在这个例子中，我们应该向什么方向改变`</span>x,y<span class="string">`以便得到一个比`</span><span class="number">-6</span><span class="string">`更大的数字呢？注意到，例如`</span>x = <span class="number">-1.99</span><span class="string">`以及`</span>y = <span class="number">2.99</span><span class="string">`时`</span>x * y = <span class="number">-5.95</span><span class="string">` 这是一个比`</span><span class="number">-6.0</span><span class="string">`更大的数。别被它搞晕了：`</span><span class="number">-5.95</span><span class="string">`是比`</span><span class="number">-6.0</span><span class="string">`更大的。这个增量为`</span><span class="number">0.05</span><span class="string">`，尽管`</span><span class="number">-5.95</span><span class="string">`的大小（到0的距离）更小一些。</span><br><span class="line"></span><br><span class="line">##### 策略#1：本地随机搜索</span><br><span class="line"></span><br><span class="line">好，等一下，现在我们有一个电路，我们有一些输入并且我们希望轻微地改变它们以便增加输出？为什么这个很难？我们可以简单的“转发”电路来计算对于任何给定的`</span>x<span class="string">`和`</span>y<span class="string">`的输出，所以这不是很简单吗？我们为什么不随机调整`</span>x<span class="string">`和`</span>y<span class="string">`来跟踪效果最好的策略呢：</span><br><span class="line">`</span><span class="string">``</span>js</span><br><span class="line"><span class="comment">// circuit with single gate for now</span></span><br><span class="line"><span class="keyword">var</span> forwardMultiplyGate = <span class="function"><span class="keyword">function</span>(<span class="params">x, y</span>) </span>&#123; <span class="keyword">return</span> x * y; &#125;;</span><br><span class="line"><span class="keyword">var</span> x = <span class="number">-2</span>, y = <span class="number">3</span>; <span class="comment">// some input values</span></span><br><span class="line">	</span><br><span class="line"><span class="comment">// try changing x,y randomly small amounts and keep track of what works best</span></span><br><span class="line"><span class="keyword">var</span> tweak_amount = <span class="number">0.01</span>;</span><br><span class="line"><span class="keyword">var</span> best_out = -<span class="literal">Infinity</span>;</span><br><span class="line"><span class="keyword">var</span> best_x = x, best_y = y;</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">var</span> k = <span class="number">0</span>; k &lt; <span class="number">100</span>; k++) &#123;</span><br><span class="line">  <span class="keyword">var</span> x_try = x + tweak_amount * (<span class="built_in">Math</span>.random() * <span class="number">2</span> - <span class="number">1</span>); <span class="comment">// tweak x a bit</span></span><br><span class="line">  <span class="keyword">var</span> y_try = y + tweak_amount * (<span class="built_in">Math</span>.random() * <span class="number">2</span> - <span class="number">1</span>); <span class="comment">// tweak y a bit</span></span><br><span class="line">  <span class="keyword">var</span> out = forwardMultiplyGate(x_try, y_try);</span><br><span class="line">  <span class="keyword">if</span>(out &gt; best_out) &#123;</span><br><span class="line">    <span class="comment">// best improvement yet! Keep track of the x and y</span></span><br><span class="line">    best_out = out; </span><br><span class="line">    best_x = x_try, best_y = y_try;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>当我执行它时，我的到了<code>best_x = -1.9928</code>，<code>best_y = 2.9901</code>，以及<code>best_out = -5.9588</code>。因为<code>-5.9588</code>比<code>-6.0</code>更大，所以我们就搞定了，是吗？并不是这样：如果你能负担得起时间的话，它对于仅包含几个门的微小的问题来说是一个完美的策略。但是对于接受上百万输入的大量的电路来说，并非如此。结果是，我们可以做的更好。</p>
+<h5 id="策略-2：数值梯度"><a href="#策略-2：数值梯度" class="headerlink" title="策略#2：数值梯度"></a>策略#2：数值梯度</h5><p>这里就有一个更好的方法。再次记住，在我们前期我们被提供了一个电路（例如，我们的电路是一个单一的<code>*</code>门）和一些特殊的输入（例如<code>x = -2, y = 3</code>）。门会计算出结果(<code>-6</code>)，而现在我们希望对<code>x</code>和<code>y</code>进行微调以便得到更高的输出。</p>
+<p>对于我们接下来要做的事情，一个很棒的直觉是这样：想象一下获取来自于门电路的输出值输出值，并且对其正向加压。正向电压会反过来通过们进行传输并且引起对输入<code>x</code>和<code>y</code>的推动。这个推动就告诉了我们应该如何改变<code>x</code>和<code>y</code>以便增加输出值。</p>
+<p>在我们这个特定的例子中，这个推动力可能是什么样子的呢？考虑一下，我们可以凭直觉知道施加在<code>x</code>上的力应该是正向的，因为使<code>x</code>轻微地增大会增加电路的输出。例如，将<code>x</code>从<code>x = -2</code>增加到<code>x = -1</code>会使我们得到<code>-3</code> - 远大于<code>-6</code>。在另一方面，我们会希望在<code>y</code>上施加负向的力，而使它变得更小(因为更小的<code>y</code>，例如从<code>y = 3</code>降到<code>y = 2</code>会使我们的结果更高：<code>2 * -2 = -4</code>，同样比<code>-6</code>更大)。但这毕竟是我们脑中的直觉。随着我们的深入，我们会了解到，我这里提到的牵引力实际上是基于输入值(<code>x</code>和<code>y</code>)的<strong>导数</strong>输出值。你可以已经听说过这些：</p>
+<pre><code>导数可以被认为是一种施加于各个输入值的力，用于使输出变得更高。
+</code></pre><p>所以我们如何来精确地评价这个牵引力（导数）呢？实际上有一个非常简单的方法。我们反向地来操作：不同于增加电路的输出值，我们一个接一个地迭代每个输入值，轻微地增加它并检测输出值如何改变。输出的改变就是导数。尽管我们到现在为止还是凭借直觉。我们还是看一下数学定义。我们可以写出函数关于某个输入的导数，例如对<code>x</code>的导数可以写成：</p>
+<div><br><span class="MathJax_Preview"></span><div class="MathJax_Display" role="textbox" aria-readonly="true" style="text-align: center;"><span class="MathJax" id="MathJax-Element-2-Frame"><nobr><span class="math" id="MathJax-Span-12" style="width: 15.419em; display: inline-block;"><span style="display: inline-block; position: relative; width: 12.815em; height: 0px; font-size: 120%;"><span style="position: absolute; clip: rect(0.992em 1000.003em 3.336em -0.466em); top: -2.497em; left: 0.003em;"><span class="mrow" id="MathJax-Span-13"><span class="mfrac" id="MathJax-Span-14"><span style="display: inline-block; position: relative; width: 3.076em; height: 0px; margin-right: 0.107em; margin-left: 0.107em;"><span style="position: absolute; clip: rect(1.669em 1000.003em 2.867em -0.414em); top: -3.174em; left: 50%; margin-left: -1.456em;"><span class="mrow" id="MathJax-Span-15"><span class="mi" id="MathJax-Span-16" style="font-family: STIXGeneral-Regular;">∂</span><span class="mi" id="MathJax-Span-17" style="font-family: STIXGeneral-Italic;">f<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.159em;"></span></span><span class="mo" id="MathJax-Span-18" style="font-family: STIXGeneral-Regular;">(</span><span class="mi" id="MathJax-Span-19" style="font-family: STIXGeneral-Italic;">x<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.003em;"></span></span><span class="mo" id="MathJax-Span-20" style="font-family: STIXGeneral-Regular;">,</span><span class="mi" id="MathJax-Span-21" style="font-family: STIXGeneral-Italic; padding-left: 0.211em;">y</span><span class="mo" id="MathJax-Span-22" style="font-family: STIXGeneral-Regular;">)</span></span><span style="display: inline-block; width: 0px; height: 2.503em;"></span></span><span style="position: absolute; clip: rect(1.669em 1000.003em 2.659em -0.414em); top: -1.82em; left: 50%; margin-left: -0.466em;"><span class="mrow" id="MathJax-Span-23"><span class="mi" id="MathJax-Span-24" style="font-family: STIXGeneral-Regular;">∂</span><span class="mi" id="MathJax-Span-25" style="font-family: STIXGeneral-Italic;">x<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.003em;"></span></span></span><span style="display: inline-block; width: 0px; height: 2.503em;"></span></span><span style="position: absolute; clip: rect(0.836em 1000.003em 1.201em -0.466em); top: -1.247em; left: 0.003em;"><span style="border-left-width: 3.076em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.25px; vertical-align: 0.003em;"></span><span style="display: inline-block; width: 0px; height: 1.044em;"></span></span></span></span><span class="mo" id="MathJax-Span-26" style="font-family: STIXGeneral-Regular; padding-left: 0.315em;">=</span><span class="mfrac" id="MathJax-Span-27" style="padding-left: 0.315em;"><span style="display: inline-block; position: relative; width: 7.971em; height: 0px; margin-right: 0.107em; margin-left: 0.107em;"><span style="position: absolute; clip: rect(1.669em 1000.003em 2.867em -0.622em); top: -3.174em; left: 50%; margin-left: -3.904em;"><span class="mrow" id="MathJax-Span-28"><span class="mi" id="MathJax-Span-29" style="font-family: STIXGeneral-Italic;">f<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.159em;"></span></span><span class="mo" id="MathJax-Span-30" style="font-family: STIXGeneral-Regular;">(</span><span class="mi" id="MathJax-Span-31" style="font-family: STIXGeneral-Italic;">x<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.003em;"></span></span><span class="mo" id="MathJax-Span-32" style="font-family: STIXGeneral-Regular; padding-left: 0.263em;">+</span><span class="mi" id="MathJax-Span-33" style="font-family: STIXGeneral-Italic; padding-left: 0.263em;">h</span><span class="mo" id="MathJax-Span-34" style="font-family: STIXGeneral-Regular;">,</span><span class="mi" id="MathJax-Span-35" style="font-family: STIXGeneral-Italic; padding-left: 0.211em;">y</span><span class="mo" id="MathJax-Span-36" style="font-family: STIXGeneral-Regular;">)</span><span class="mo" id="MathJax-Span-37" style="font-family: STIXGeneral-Regular; padding-left: 0.263em;">−</span><span class="mi" id="MathJax-Span-38" style="font-family: STIXGeneral-Italic; padding-left: 0.263em;">f<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.159em;"></span></span><span class="mo" id="MathJax-Span-39" style="font-family: STIXGeneral-Regular;">(</span><span class="mi" id="MathJax-Span-40" style="font-family: STIXGeneral-Italic;">x<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.003em;"></span></span><span class="mo" id="MathJax-Span-41" style="font-family: STIXGeneral-Regular;">,</span><span class="mi" id="MathJax-Span-42" style="font-family: STIXGeneral-Italic; padding-left: 0.211em;">y</span><span class="mo" id="MathJax-Span-43" style="font-family: STIXGeneral-Regular;">)</span></span><span style="display: inline-block; width: 0px; height: 2.503em;"></span></span><span style="position: absolute; clip: rect(1.669em 1000.003em 2.659em -0.466em); top: -1.82em; left: 50%; margin-left: -0.258em;"><span class="mi" id="MathJax-Span-44" style="font-family: STIXGeneral-Italic;">h</span><span style="display: inline-block; width: 0px; height: 2.503em;"></span></span><span style="position: absolute; clip: rect(0.836em 1000.003em 1.201em -0.466em); top: -1.247em; left: 0.003em;"><span style="border-left-width: 7.971em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.25px; vertical-align: 0.003em;"></span><span style="display: inline-block; width: 0px; height: 1.044em;"></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 2.503em;"></span></span></span><span style="border-left-width: 0.003em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 2.566em; vertical-align: -0.872em;"></span></span></nobr></span></div><script type="math/tex; mode=display" id="MathJax-Element-2"><br>\frac{\partial f(x,y)}{\partial x} = \frac{f(x+h,y) - f(x,y)}{h}<br></script><br></div>
+
+<p>在这里，h是非常小的，这是你改变的总量。并且，如果你不太熟悉计算的话，必须要注意的是，在等式的左边，横线<strong>并不</strong>表示除法。这个符号∂f(x,y)/∂x是一个整体：函数 f(x,y) 对x的编导。等式右边的横线表示除法。我知道这非常让人迷惑，但这是一个标准符号。无论怎样，我希望这并没有太吓人，因为它的确很简单：电路被赋予一些f(x,y)的初始值，然后我们将其中的一个输入改变一个非常小的量h，并且获取新的输出f(x+h,y)。将二者相减我们能得到改变量，然后除以h我们就得到了对于任意改变量的标准量。从另一方面说，下面的代码这正反应了我上面阐述：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x = <span class="number">-2</span>, y = <span class="number">3</span>;</span><br><span class="line"><span class="keyword">var</span> out = forwardMultiplyGate(x, y); <span class="comment">// -6</span></span><br><span class="line"><span class="keyword">var</span> h = <span class="number">0.0001</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// compute derivative with respect to x</span></span><br><span class="line"><span class="keyword">var</span> xph = x + h; <span class="comment">// -1.9999</span></span><br><span class="line"><span class="keyword">var</span> out2 = forwardMultiplyGate(xph, y); <span class="comment">// -5.9997</span></span><br><span class="line"><span class="keyword">var</span> x_derivative = (out2 - out) / h; <span class="comment">// 3.0</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// compute derivative with respect to y</span></span><br><span class="line"><span class="keyword">var</span> yph = y + h; <span class="comment">// 3.0001</span></span><br><span class="line"><span class="keyword">var</span> out3 = forwardMultiplyGate(x, yph); <span class="comment">// -6.0002</span></span><br><span class="line"><span class="keyword">var</span> y_derivative = (out3 - out) / h; <span class="comment">// -2.0</span></span><br></pre></td></tr></table></figure>
+<p>让我们对<code>x</code>进行研究，我们将输入从<code>x</code>变为<code>x + h</code>，然后电路反馈</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/11/16/Hackers-guide-to-Neural-Networks/" data-id="cirfvhfns000bbknbfvwtf868" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/blog-hexo/2014/11/24/Nodejs-in-flames/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          火焰中的Nodejs
+        
+      </div>
+    </a>
+  
+  
+    <a href="/blog-hexo/2014/11/14/embracing-async-in-javascript-part-2/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">拥抱JavaScript中的异步2（译）</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Haskell/">Haskell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/NodeJS/">NodeJS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Translation/">Translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-async-translation/">generator async translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-translation/">generator translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/jison/">jison</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/js-generator-tanslation/">js, generator, tanslation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/blog-hexo/tags/Haskell/" style="font-size: 10px;">Haskell</a> <a href="/blog-hexo/tags/NodeJS/" style="font-size: 15px;">NodeJS</a> <a href="/blog-hexo/tags/Translation/" style="font-size: 10px;">Translation</a> <a href="/blog-hexo/tags/docker/" style="font-size: 10px;">docker</a> <a href="/blog-hexo/tags/generator-async-translation/" style="font-size: 10px;">generator async translation</a> <a href="/blog-hexo/tags/generator-translation/" style="font-size: 10px;">generator translation</a> <a href="/blog-hexo/tags/jison/" style="font-size: 15px;">jison</a> <a href="/blog-hexo/tags/js-generator-tanslation/" style="font-size: 10px;">js, generator, tanslation</a> <a href="/blog-hexo/tags/translation/" style="font-size: 20px;">translation</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/11/">November 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/10/">October 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/08/">August 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/07/">July 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/06/">June 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/blog-hexo/2016/08/03/fix-docker-x509-error/">fix-docker-x509-error</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/29/Parsing-text-table-with-jison-3/">Parsing-text-table-with-jison-3</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/28/Parsing-text-table-with-jison-2/">Parsing-text-table-with-jison-2</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/21/Parsing-text-table-with-jison/">Parsing-text-table-with-jison</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2015/10/31/Tail-Recursion-in-Haskell/">Tail Recursion in Haskell</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 Xiaochen Nie<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/blog-hexo/" class="mobile-nav-link">Home</a>
+  
+    <a href="/blog-hexo/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/blog-hexo/fancybox/jquery.fancybox.css">
+  <script src="/blog-hexo/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/blog-hexo/js/script.js"></script>
+
+  </div>
+</body>
+</html>

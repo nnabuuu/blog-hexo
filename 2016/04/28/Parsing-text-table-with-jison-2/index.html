@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Parsing-text-table-with-jison-2 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="用jison解析一个文本表格2在上一篇文章中，我们完成了一个最初版本的的Parser，它可以用来解析一个基本的表格文本。接下来，我们将以此为基础逐步完善更多内容。
+将表格内容存入对象 Store cells in an object instead of array我们知道在bison中，使用者可以通过yylval保存全局变量。类似的，在jison中，我们可以通过全局变量yy来储存。见官网描述：h">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Parsing-text-table-with-jison-2">
+<meta property="og:url" content="http://nnabuuu.github.io/blog-hexo/2016/04/28/Parsing-text-table-with-jison-2/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="用jison解析一个文本表格2在上一篇文章中，我们完成了一个最初版本的的Parser，它可以用来解析一个基本的表格文本。接下来，我们将以此为基础逐步完善更多内容。
+将表格内容存入对象 Store cells in an object instead of array我们知道在bison中，使用者可以通过yylval保存全局变量。类似的，在jison中，我们可以通过全局变量yy来储存。见官网描述：h">
+<meta property="og:updated_time" content="2016-04-29T18:43:51.166Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Parsing-text-table-with-jison-2">
+<meta name="twitter:description" content="用jison解析一个文本表格2在上一篇文章中，我们完成了一个最初版本的的Parser，它可以用来解析一个基本的表格文本。接下来，我们将以此为基础逐步完善更多内容。
+将表格内容存入对象 Store cells in an object instead of array我们知道在bison中，使用者可以通过yylval保存全局变量。类似的，在jison中，我们可以通过全局变量yy来储存。见官网描述：h">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/blog-hexo/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/blog-hexo/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/blog-hexo/">Home</a>
+        
+          <a class="main-nav-link" href="/blog-hexo/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://nnabuuu.github.io/blog-hexo"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Parsing-text-table-with-jison-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2016/04/28/Parsing-text-table-with-jison-2/" class="article-date">
+  <time datetime="2016-04-28T07:11:16.000Z" itemprop="datePublished">2016-04-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Parsing-text-table-with-jison-2
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="用jison解析一个文本表格2"><a href="#用jison解析一个文本表格2" class="headerlink" title="用jison解析一个文本表格2"></a>用jison解析一个文本表格2</h1><p>在上一篇文章中，我们完成了一个最初版本的的Parser，它可以用来解析一个基本的表格文本。接下来，我们将以此为基础逐步完善更多内容。</p>
+<h3 id="将表格内容存入对象-Store-cells-in-an-object-instead-of-array"><a href="#将表格内容存入对象-Store-cells-in-an-object-instead-of-array" class="headerlink" title="将表格内容存入对象 Store cells in an object instead of array"></a>将表格内容存入对象 Store cells in an object instead of array</h3><p>我们知道在bison中，使用者可以通过yylval保存全局变量。类似的，在jison中，我们可以通过全局变量yy来储存。<br>见<a href="http://zaa.ch/jison/docs/#sharing-scope" target="_blank" rel="external">官网描述：http://zaa.ch/jison/docs/#sharing-scope</a></p>
+<p>那么，首先我们好奇的是，这个变量yy到底包含哪些内容。我们在执行时将它输出到控制台一探究竟：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&#123; lexer:</span><br><span class="line">  &#123;</span><br><span class="line">    yy: [Circular],</span><br><span class="line">    _input: &apos;&apos;,</span><br><span class="line">    done: true,</span><br><span class="line">    _backtrack: false,</span><br><span class="line">    _more: false,</span><br><span class="line">    yyleng: 0,</span><br><span class="line">    yylineno: 16,</span><br><span class="line">    match: &apos;&apos;,</span><br><span class="line">    matched: &apos;+---------------------------------+---------+----------------+---------------+\r\n| VM | State | VM Type | IP |\r\n+---------------------------------+---------+----------------+---------------+\r\n| a/0 | running | a | 192.168.1.159 |\r\n| b/0 | running | b | 192.168.1.161 |\r\n| b/1 | running | b | 192.168.1.162 |\r\n| b/2 | running | b | 192.168.1.163 |\r\n| eeee/0 | running | iiiiiiiiiiiiii | 192.168.1.164 |\r\n| haaaaaaa/0 | running | iiiiiiiiiiiiii | 192.168.1.168 |\r\n| c/0 | running | iiiiiiiiiiiiii | 192.168.1.166 |\r\n| lllllllllloooooooooolllllller/0 | running | iiiiiiiiiiiiii | 192.168.1.167 |\r\n| n1/0 | running | iiiiiiiiiiiiii | 192.168.1.156 |\r\n| n2/0 | running | iiiiiiiiiiiiii | 192.168.1.157 |\r\n| n3/0 | running | iiiiiiiiiiiiii | 192.168.1.158 |\r\n| n4/0 | running | iiiiiiiiiiiiii | 192.168.1.165 |\r\n| u1/0 | running | iiiiiiiiiiiiii | 192.168.1.160 |\r\n+---------------------------------+---------+----------------+---------------+&apos;,</span><br><span class="line">    yytext: &apos;&apos;,</span><br><span class="line">    conditionStack: [ &apos;INITIAL&apos; ],</span><br><span class="line">    yylloc:</span><br><span class="line">    &#123;</span><br><span class="line">      first_line: 17,</span><br><span class="line">      last_line: 17,</span><br><span class="line">      first_column: 78,</span><br><span class="line">      last_column: 78 &#125;,</span><br><span class="line">    offset: 0,</span><br><span class="line">    matches: [ &apos;&apos;, index: 0, input: &apos;&apos; ] &#125;,</span><br><span class="line">    parser: &#123; yy: &#123;&#125;, parseError: [Function: parseError] &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>我们看到，yy中储存了多个运行时用到的变量。我们很容易在里面找到bison中其他变量的对应，例如yytext和yyleng。<br>这些变量在语法解析的过程中均可以被访问到，因此，我们大胆猜想一下，如果我们想要保存/使用自己的变量，或许可以直接通过yy.myVarible进行访问。<br>我们修改jison文件如下（仅标出修改部分），并保存为table-v2.jison：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">%lex</span><br><span class="line"></span><br><span class="line">%&#123;</span><br><span class="line">yy.convert = function(obj, header)&#123;</span><br><span class="line">  for(var i=0;i&lt;obj._content.length;i++)</span><br><span class="line">  &#123;</span><br><span class="line">    obj[header[i]]=obj._content[i];</span><br><span class="line">  &#125;</span><br><span class="line">  delete obj._content;</span><br><span class="line">  return obj;</span><br><span class="line">&#125;</span><br><span class="line">%&#125;</span><br><span class="line"></span><br><span class="line">%%</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">headerline</span><br><span class="line">  : line</span><br><span class="line">    &#123;</span><br><span class="line">      yy.header = [];</span><br><span class="line">      for(var i=0;i&lt;$1._content.length;i++)&#123;</span><br><span class="line">        yy.header.push($1._content[i]);</span><br><span class="line">      &#125;</span><br><span class="line">      $$ = $1;</span><br><span class="line">    &#125;</span><br><span class="line">  ;</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">content</span><br><span class="line">  : line</span><br><span class="line">    &#123;</span><br><span class="line">      $$ = &#123;_content: []&#125;;</span><br><span class="line">      $$._content.push(yy.convert($1,yy.header));</span><br><span class="line">    &#125;</span><br><span class="line">  | content line</span><br><span class="line">    &#123;</span><br><span class="line">      $1._content.push(yy.convert($2,yy.header));</span><br><span class="line">      $$ = $1;</span><br><span class="line">    &#125;</span><br><span class="line">  ;</span><br></pre></td></tr></table></figure>
+<p>再运行下面的代码看看：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">jison table-v2.jison</span><br><span class="line">node table-v2.js sample.txt</span><br></pre></td></tr></table></figure>
+<p>控制台输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">&#123; _content:</span><br><span class="line">  [ &#123; VM: &apos;a/0&apos;,</span><br><span class="line">  State: &apos;running&apos;,</span><br><span class="line">  &apos;VM Type&apos;: &apos;a&apos;,</span><br><span class="line">  IP: &apos;192.168.1.159&apos; &#125;,</span><br><span class="line">    &#123; VM: &apos;b/0&apos;,</span><br><span class="line">    State: &apos;running&apos;,</span><br><span class="line">    &apos;VM Type&apos;: &apos;b&apos;,</span><br><span class="line">    IP: &apos;192.168.1.161&apos; &#125;,</span><br><span class="line">    &#123; VM: &apos;b/1&apos;,</span><br><span class="line">    State: &apos;running&apos;,</span><br><span class="line">    &apos;VM Type&apos;: &apos;b&apos;,</span><br><span class="line">    IP: &apos;192.168.1.162&apos; &#125;,</span><br><span class="line">    &#123; VM: &apos;b/2&apos;,</span><br><span class="line">    State: &apos;running&apos;,</span><br><span class="line">    &apos;VM Type&apos;: &apos;b&apos;,</span><br><span class="line">    IP: &apos;192.168.1.163&apos; &#125;,</span><br><span class="line">    &#123; VM: &apos;eeee/0&apos;,</span><br><span class="line">    State: &apos;running&apos;,</span><br><span class="line">    &apos;VM Type&apos;: &apos;iiiiiiiiiiiiii&apos;,</span><br><span class="line">    IP: &apos;192.168.1.164&apos; &#125;,</span><br><span class="line">    &#123; VM: &apos;haaaaaaa/0&apos;,</span><br><span class="line">    State: &apos;running&apos;,</span><br><span class="line">    &apos;VM Type&apos;: &apos;iiiiiiiiiiiiii&apos;,</span><br><span class="line">    IP: &apos;192.168.1.168&apos; &#125;,</span><br><span class="line">    &#123; VM: &apos;c/0&apos;,</span><br><span class="line">    State: &apos;running&apos;,</span><br><span class="line">    &apos;VM Type&apos;: &apos;iiiiiiiiiiiiii&apos;,</span><br><span class="line">    IP: &apos;192.168.1.166&apos; &#125;,</span><br><span class="line">    &#123; VM: &apos;lllllllllloooooooooolllllller/0&apos;,</span><br><span class="line">    State: &apos;running&apos;,</span><br><span class="line">    &apos;VM Type&apos;: &apos;iiiiiiiiiiiiii&apos;,</span><br><span class="line">    IP: &apos;192.168.1.167&apos; &#125;,</span><br><span class="line">    &#123; VM: &apos;n1/0&apos;,</span><br><span class="line">    State: &apos;running&apos;,</span><br><span class="line">    &apos;VM Type&apos;: &apos;iiiiiiiiiiiiii&apos;,</span><br><span class="line">    IP: &apos;192.168.1.156&apos; &#125;,</span><br><span class="line">    &#123; VM: &apos;n2/0&apos;,</span><br><span class="line">    State: &apos;running&apos;,</span><br><span class="line">    &apos;VM Type&apos;: &apos;iiiiiiiiiiiiii&apos;,</span><br><span class="line">    IP: &apos;192.168.1.157&apos; &#125;,</span><br><span class="line">    &#123; VM: &apos;n3/0&apos;,</span><br><span class="line">    State: &apos;running&apos;,</span><br><span class="line">    &apos;VM Type&apos;: &apos;iiiiiiiiiiiiii&apos;,</span><br><span class="line">    IP: &apos;192.168.1.158&apos; &#125;,</span><br><span class="line">    &#123; VM: &apos;n4/0&apos;,</span><br><span class="line">    State: &apos;running&apos;,</span><br><span class="line">    &apos;VM Type&apos;: &apos;iiiiiiiiiiiiii&apos;,</span><br><span class="line">    IP: &apos;192.168.1.165&apos; &#125;,</span><br><span class="line">    &#123; VM: &apos;u1/0&apos;,</span><br><span class="line">    State: &apos;running&apos;,</span><br><span class="line">    &apos;VM Type&apos;: &apos;iiiiiiiiiiiiii&apos;,</span><br><span class="line">    IP: &apos;192.168.1.160&apos; &#125; ] &#125;</span><br></pre></td></tr></table></figure>
+<p>干的不错，我们成功的将表格内容存入了对应的对象中，收工！</p>
+<h3 id="一些jison的坑"><a href="#一些jison的坑" class="headerlink" title="一些jison的坑"></a>一些jison的坑</h3><p>从上面的代码中可以看到，我在预编译阶段声明并定义了yy.convert函数。我们可以在语法分析阶段直接使用该函数。<br>但是，如果我们在预编译阶段声明我们要用到的变量例如<code>yy.header = [];</code>，则会出现严重问题。Jison在每一个语法匹配完成之后将重置yy.header为最初声明的空的Array。导致在匹配<code>content</code>语法时无法拿到正确的yy.header。<br>因此，我将yy.header的初始化放到了headerline的处理逻辑中，以此绕过这个坑。<br>我已经在github题了一个<a href="https://github.com/zaach/jison/issues/327" target="_blank" rel="external">issue</a>，暂时没有人回复。。。</p>
+<h3 id="然后"><a href="#然后" class="headerlink" title="然后"></a>然后</h3><p>我想到可以继续扩展的功能点包括：</p>
+<ol>
+<li>多行Header</li>
+<li>表格中有空的Cell</li>
+</ol>
+<p>这些会在接下来的文章中一一补充。</p>
+<p>众人：才刚刚填了一个坑立马又挖了两个，眼看着就要烂尾了。。<br>abuuu：就算烂尾我也要挖-。-！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2016/04/28/Parsing-text-table-with-jison-2/" data-id="cirfvhfnx000gbknb4f835p9g" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/NodeJS/">NodeJS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/jison/">jison</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/blog-hexo/2016/04/29/Parsing-text-table-with-jison-3/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Parsing-text-table-with-jison-3
+        
+      </div>
+    </a>
+  
+  
+    <a href="/blog-hexo/2016/04/21/Parsing-text-table-with-jison/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Parsing-text-table-with-jison</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Haskell/">Haskell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/NodeJS/">NodeJS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Translation/">Translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-async-translation/">generator async translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-translation/">generator translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/jison/">jison</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/js-generator-tanslation/">js, generator, tanslation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/blog-hexo/tags/Haskell/" style="font-size: 10px;">Haskell</a> <a href="/blog-hexo/tags/NodeJS/" style="font-size: 15px;">NodeJS</a> <a href="/blog-hexo/tags/Translation/" style="font-size: 10px;">Translation</a> <a href="/blog-hexo/tags/docker/" style="font-size: 10px;">docker</a> <a href="/blog-hexo/tags/generator-async-translation/" style="font-size: 10px;">generator async translation</a> <a href="/blog-hexo/tags/generator-translation/" style="font-size: 10px;">generator translation</a> <a href="/blog-hexo/tags/jison/" style="font-size: 15px;">jison</a> <a href="/blog-hexo/tags/js-generator-tanslation/" style="font-size: 10px;">js, generator, tanslation</a> <a href="/blog-hexo/tags/translation/" style="font-size: 20px;">translation</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/11/">November 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/10/">October 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/08/">August 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/07/">July 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/06/">June 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/blog-hexo/2016/08/03/fix-docker-x509-error/">fix-docker-x509-error</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/29/Parsing-text-table-with-jison-3/">Parsing-text-table-with-jison-3</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/28/Parsing-text-table-with-jison-2/">Parsing-text-table-with-jison-2</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/21/Parsing-text-table-with-jison/">Parsing-text-table-with-jison</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2015/10/31/Tail-Recursion-in-Haskell/">Tail Recursion in Haskell</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 Xiaochen Nie<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/blog-hexo/" class="mobile-nav-link">Home</a>
+  
+    <a href="/blog-hexo/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/blog-hexo/fancybox/jquery.fancybox.css">
+  <script src="/blog-hexo/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/blog-hexo/js/script.js"></script>
+
+  </div>
+</body>
+</html>

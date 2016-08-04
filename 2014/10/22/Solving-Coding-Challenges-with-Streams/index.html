@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>用Stream解决编程挑战（译） | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="#用Stream解决编程挑战（译）
+我第一次使用Node.js解决编程挑战的经验简直是让人焦虑不已。我设计了一个切实可行的解决方法，但我却无法找到一个有效的方法来解析输入。它的格式非常的简单：文本通过stdin的pipe输入。很简单，是吧？但我一般的时间都耗费在这个小小的细节上，最终我得到了一个非常脆弱的、缝缝补补的、处处hack过的代码，这至今仍然让我感到不寒而栗。
+这份经验激励着我找到一种管用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用Stream解决编程挑战（译）">
+<meta property="og:url" content="http://nnabuuu.github.io/blog-hexo/2014/10/22/Solving-Coding-Challenges-with-Streams/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="#用Stream解决编程挑战（译）
+我第一次使用Node.js解决编程挑战的经验简直是让人焦虑不已。我设计了一个切实可行的解决方法，但我却无法找到一个有效的方法来解析输入。它的格式非常的简单：文本通过stdin的pipe输入。很简单，是吧？但我一般的时间都耗费在这个小小的细节上，最终我得到了一个非常脆弱的、缝缝补补的、处处hack过的代码，这至今仍然让我感到不寒而栗。
+这份经验激励着我找到一种管用">
+<meta property="og:updated_time" content="2016-04-29T18:43:51.167Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="用Stream解决编程挑战（译）">
+<meta name="twitter:description" content="#用Stream解决编程挑战（译）
+我第一次使用Node.js解决编程挑战的经验简直是让人焦虑不已。我设计了一个切实可行的解决方法，但我却无法找到一个有效的方法来解析输入。它的格式非常的简单：文本通过stdin的pipe输入。很简单，是吧？但我一般的时间都耗费在这个小小的细节上，最终我得到了一个非常脆弱的、缝缝补补的、处处hack过的代码，这至今仍然让我感到不寒而栗。
+这份经验激励着我找到一种管用">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/blog-hexo/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/blog-hexo/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/blog-hexo/">Home</a>
+        
+          <a class="main-nav-link" href="/blog-hexo/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://nnabuuu.github.io/blog-hexo"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Solving-Coding-Challenges-with-Streams" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2014/10/22/Solving-Coding-Challenges-with-Streams/" class="article-date">
+  <time datetime="2014-10-23T06:32:11.000Z" itemprop="datePublished">2014-10-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      用Stream解决编程挑战（译）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#用Stream解决编程挑战（译）</p>
+<p>我第一次使用Node.js解决编程挑战的经验简直是让人焦虑不已。我设计了一个切实可行的解决方法，但我却无法找到一个有效的方法来解析输入。它的格式非常的简单：文本通过stdin的pipe输入。很简单，是吧？但我一般的时间都耗费在这个小小的细节上，最终我得到了一个非常脆弱的、缝缝补补的、处处hack过的代码，这至今仍然让我感到不寒而栗。</p>
+<p>这份经验激励着我找到一种管用的方式来完成编程挑战。在解决了更多问题之后我终于找到了一种我希望大家都能觉得又用的方式。</p>
+<p>##模式</p>
+<p>主要的思想是：创造一个problem的stream，将每一个problem转化为一个solition。这个流程由4个步骤组成：</p>
+<ol>
+<li>将输入打散为行的stream。</li>
+<li>将这些行转化为和问题相关的数据结构</li>
+<li>解决问题</li>
+<li>格式化solution并输出</li>
+</ol>
+<p>对于那些熟悉stream的人来说，这个模式看起来像这样：</p>
+<pre><code>var split = require(&quot;split&quot;); // dominictarr’s helpful line-splitting module
+
+process.stdin
+    .pipe(split()) // split input into lines
+    .pipe(new ProblemStream()) // transform lines into problem data structures
+    .pipe(new SolutionStream()) // solve each problem
+    .pipe(new FormatStream()) // format the solutions for output
+    .pipe(process.stdout); // write solution to stdout
+</code></pre><p>##我们的问题</p>
+<p>为了让这个教程更接地气一点，让我们来解决一个<a href="https://code.google.com/codejam/contest/2929486/dashboard" target="_blank" rel="external">Google Code Jam challenge</a>。这个问题是让我们验证数独游戏的解答。输入看起来像这样：</p>
+<pre><code>2                  // number of puzzles to verify
+3                  // dimensions of first puzzle (3 * 3 = 9)
+7 6 5 1 9 8 4 3 2  // first puzzle
+8 1 9 2 4 3 5 7 6
+3 2 4 6 5 7 9 8 1
+1 9 8 4 3 2 7 6 5
+2 4 3 5 7 6 8 1 9
+6 5 7 9 8 1 3 2 4
+4 3 2 7 6 5 1 9 8
+5 7 6 8 1 9 2 4 3
+9 8 1 3 2 4 6 5 7
+3                  // dimensions of second puzzle
+7 9 5 1 3 8 4 6 2  // second puzzle
+2 1 3 5 4 6 8 7 9
+6 8 4 9 2 7 4 5 1
+1 3 8 4 6 2 7 9 5
+5 4 6 8 7 9 2 1 3
+9 2 7 3 5 1 6 8 4
+4 6 2 7 9 5 1 3 8
+8 7 9 2 1 3 5 4 6
+3 5 1 6 8 4 9 2 7
+</code></pre><p>我们输出的格式应该是：</p>
+<pre><code>Case #1: Yes
+Case #2: No
+</code></pre><p>其中“Yes”表明解答是正确的。</p>
+<p>让我们开始吧。</p>
+<p>##建立</p>
+<p>我们的第一步就是要从stdin中提取输入。在Node中，stdin是一个可读的stream。基本上，一个可读stream会在数据可读后立刻发送数据（更多的解释，参见<a href="http://nodejs.org/api/stream.html#stream_class_stream_readable" target="_blank" rel="external">readable stream docs</a>）。下面这行代码会输出所有输入到stdin中的内容：</p>
+<pre><code>process.stdin.pipe(process.stdout);
+</code></pre><p><code>pipe</code>方法从可读stream中获取所有的数据并写入一个可写stream。</p>
+<p>可能从这份代码中并不显而易见，但是<code>process.stdin</code>会以大块byte的形式pipe数据，而我们感兴趣的是以行为分隔的文本。为了将这种大块数据分解成行，我们可以将<code>process.stdin</code> pipe进入dominictarr所写的<code>split</code>模块中。首先<code>npm install split</code>，然后：</p>
+<pre><code>var split = require(&quot;split&quot;);
+
+process.stdin.setEncoding(&quot;utf8&quot;); // convert bytes to utf8 characters
+
+process.stdin
+     .pipe(split())
+     .pipe(process.stdout);
+</code></pre><p>##使用transform stream构造问题</p>
+<p>现在我们有了由行组成的序列，我们可以开始进行我们真正的工作了。我们会将这些行转化为一串代表数独问题的二维数组中。然后，我们pipe每个数独问题到另一个流并用它来检验它是否是一个正确的解答。</p>
+<p>Node的原生transform stream提供了我们所需要的抽象。一个transform stream将写入它的数据进行转化，并将结果以一个可读stream的方式输出。有点疑惑？我们下面会让你清楚一些。</p>
+<p>为了创建一个transform stream，我们要继承stream.Transform并调用它的构造函数。</p>
+<pre><code>var Transform = require(&quot;stream&quot;).Transform;
+var util = require(&quot;util&quot;);
+
+util.inherits(ProblemStream, Transform); // inherit Transform
+
+function ProblemStream () {
+    Transform.call(this, { &quot;objectMode&quot;: true }); // invoke Transform&apos;s constructor
+}
+</code></pre><p>你会注意到，我们传递了<code>objectMode</code>的flag到<code>Transform</code>的构造函数中。原始的Stream上只接受string和buffer。而我们希望输出一个二维数组，所以我们需要打开object模式。</p>
+<p>Transform stream有两个重要的方法：<code>_transform</code>和<code>_flush</code>。<code>_transform</code>在每当有数据写入stream时被调用。我们使用这个方法来将一系列的行转化为一个数组解答。<code>_flush</code>将在transform stream被通知没有更多的数据会被写入时被调用。这个函数有助于我们结束任何尚未结束的任务。</p>
+<p>让我们草拟我们的transform函数：</p>
+<pre><code>ProblemStream.prototype._transform = function (line, encoding, processed) {
+     // TODO
+}
+</code></pre><p><code>_transform</code>接受3个参数。第一个是写入stream的数据。在我们这个情况下，就是一行文本。第二个参数是stream编码，在此我们设为utf8。最后一个参数是一个无参的回调函数用来提供已经结束输入处理的信号。</p>
+<p>当你在实现<code>_transform</code>函数的时候要牢记两点：</p>
+<ol>
+<li>调用<code>processed</code>回调函数并不向output stream中添加任何内容。它仅仅是一个信号，标志着我们已经完成了传递给<code>_transform</code>的内容的处理</li>
+<li>如果要输出一个值，使用<code>this.push(value)</code></li>
+</ol>
+<p>记住这些，让我们再来看看输入。</p>
+<pre><code>2
+3
+7 6 5 1 9 8 4 3 2
+8 1 9 2 4 3 5 7 6
+3 2 4 6 5 7 9 8 1
+1 9 8 4 3 2 7 6 5
+2 4 3 5 7 6 8 1 9
+6 5 7 9 8 1 3 2 4
+4 3 2 7 6 5 1 9 8
+5 7 6 8 1 9 2 4 3
+9 8 1 3 2 4 6 5 7
+3
+7 9 5 1 3 8 4 6 2
+2 1 3 5 4 6 8 7 9
+6 8 4 9 2 7 4 5 1
+1 3 8 4 6 2 7 9 5
+5 4 6 8 7 9 2 1 3
+9 2 7 3 5 1 6 8 4
+4 6 2 7 9 5 1 3 8
+8 7 9 2 1 3 5 4 6
+3 5 1 6 8 4 9 2 7
+</code></pre><p>我们马上就遇到了一个问题：我们的<code>_transform</code>方法每行被调用一次，但是前面三行每一行都代表不同的意义。第一行描述了要解决多少个问题，第二行是接下来的解答由几行组成，第三行是解答内容。我们的stream需要用不同的方式处理每一行。</p>
+<p>幸运的是，我们可以将状态保存在transform stream内部：</p>
+<pre><code>var Transform = require(&quot;stream&quot;).Transform;
+var util = require(&quot;util&quot;);
+
+util.inherits(ProblemStream, Transform);
+
+function ProblemStream () {
+    Transform.call(this, { &quot;objectMode&quot;: true });
+
+    this.numProblemsToSolve = null;
+    this.puzzleSize = null;
+    this.currentPuzzle = null;
+}
+</code></pre><p>通过这些变量，我们就可以追踪到我们正处在行序列的何处。</p>
+<pre><code>ProblemStream.prototype._transform = function (line, encoding, processed) {
+    if (this.numProblemsToSolve === null) { // handle first line
+        this.numProblemsToSolve = +line;
+    }
+    else if (this.puzzleSize === null) { // start a new puzzle
+        this.puzzleSize = (+line) * (+line); // a size of 3 means the puzzle will be 9 lines long
+        this.currentPuzzle = [];
+    }
+    else {
+        var numbers = line.match(/\d+/g); // break line into an array of numbers
+        this.currentPuzzle.push(numbers); // add a new row to the puzzle
+        this.puzzleSize--; // decrement number of remaining lines to parse for puzzle
+
+        if (this.puzzleSize === 0) {
+            this.push(this.currentPuzzle); // we&apos;ve parsed the full puzzle; add it to the output stream
+            this.puzzleSize = null; // reset; ready for next puzzle
+        }
+    }
+    processed(); // we&apos;re done processing the current line
+};
+
+process.stdin
+    .pipe(split())
+    .pipe(new ProblemStream())
+    .pipe(new SolutionStream()) // TODO
+    .pipe(new FormatStream()) // TODO
+    .pipe(process.stdout); 
+</code></pre><p>让我们花点时间来回顾一下代码。记住<code>_transform</code>会为每行所调用。第一行_transform接收到对应的需要解决问题的数目。由于<code>numProblemsToSolve</code>是null，所以这个逻辑分支会被执行。被传递到<code>_transform</code>的第二行是解答的尺寸。由于我们已经知道解答的尺寸，第三行是构造数据结构的开始。一旦解答被构造，我们会将一个完整的解答推送到transform stream的输出端，然后准备创建一个新的解答。循环此过程直到我们读完所有行。</p>
+<p>##解决所有的问题吧！</p>
+<p>解析完并构造出数独解答的数据结构之后，我们终于可以开始解答这个问题了。</p>
+<p>“解答问题”的任务，可以被解释为“将一个问题转化为一个解答”。这就是我们的下一个stream所要做的。</p>
+<pre><code>util.inherits(SolutionStream, Transform);
+
+function SolutionStream () {
+    Transform.call(this, { &quot;objectMode&quot;: true });
+}
+</code></pre><p>然后，我们定义一个<code>_transform</code>方法，它接受一个problem参数，并返回一个布尔值。</p>
+<pre><code>SolutionStream.prototype._transform = function (problem, encoding, processed) {
+    var solution = solve(problem);
+    this.push(solution);
+    processed();
+
+    function solve (problem) {
+        // TODO
+        return false;
+    }
+};
+
+process.stdin
+    .pipe(split())
+    .pipe(new ProblemStream())
+    .pipe(new SolutionStream())
+    .pipe(new FormatStream()) // TODO
+    .pipe(process.stdout);
+</code></pre><p>不像<code>ProblemStream</code>一样，这个stream会为每一个输入构造一个输出，<code>_transform</code>会为每个问题执行一次，我们需要解决所有的问题。</p>
+<p>我们所有要做的就是写一个函数来决定是否数独问题被解决了，我把这个留给你自己来解答。</p>
+<h2 id="修饰输出"><a href="#修饰输出" class="headerlink" title="修饰输出"></a>修饰输出</h2><p>现在我们解决了这个问题，我们的最后一步是格式化输出。如你所料，我们又将使用一个transform stream。</p>
+<p>我们的<code>FormatStream</code>接受一个解答并转化为一个字符串传递到<code>process.stdout</code>中。</p>
+<p>还记得输出格式吗？</p>
+<pre><code>Case #1: Yes
+Case #2: No
+</code></pre><p>我们需要纪录问题号，并将布尔值转化为”Yes”或者”No”。</p>
+<pre><code>util.inherits(FormatStream, Transform);
+function FormatStream () {
+    Transform.call(this, { &quot;objectMode&quot;: true });
+
+    this.caseNumber = 0;
+}
+
+FormatStream.prototype._transform = function (solution, encoding, processed) {
+    this.caseNumber++;
+
+    var result = solution ? &quot;Yes&quot; : &quot;No&quot;;
+
+    var formatted = &quot;Case #&quot; + this.caseNumber + &quot;: &quot; + result + &quot;\n&quot;;
+
+    this.push(formatted);
+    processed();
+};
+</code></pre><p>现在，将<code>FormatStream</code>连接到我们的pipeline中，我们就完成了</p>
+<pre><code>process.stdin
+    .pipe(split())
+    .pipe(new ProblemStream())
+    .pipe(new SolutionStream())
+    .pipe(new FormatStream())
+    .pipe(process.stdout);
+</code></pre><p><a href="https://github.com/nimbus154/node-coding-challenge-pattern" target="_blank" rel="external">从Github上获取完整代码。</a></p>
+<h2 id="最后一条提示"><a href="#最后一条提示" class="headerlink" title="最后一条提示"></a>最后一条提示</h2><p>使用<code>pipe</code>的最大好处是你可以在任何可读/可写流中重用你的代码。如果你需要解答一个来自网络的问题，将<code>process.stdin</code>和<code>process.stdout</code>改为网络stream，所有的一切应该可以直接使用。</p>
+<p>对于每一个问题你可以需要做相应的微调，但我希望它给出了一个好的开始。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/10/22/Solving-Coding-Challenges-with-Streams/" data-id="cirfvhfo2000kbknb7rq1oe0r" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/blog-hexo/2014/11/14/embracing-async-in-javascript-part-2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          拥抱JavaScript中的异步2（译）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/blog-hexo/2014/10/07/embracing-async-in-javascript-part-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">拥抱JavaScript中的异步（译）</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Haskell/">Haskell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/NodeJS/">NodeJS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Translation/">Translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-async-translation/">generator async translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-translation/">generator translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/jison/">jison</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/js-generator-tanslation/">js, generator, tanslation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/blog-hexo/tags/Haskell/" style="font-size: 10px;">Haskell</a> <a href="/blog-hexo/tags/NodeJS/" style="font-size: 15px;">NodeJS</a> <a href="/blog-hexo/tags/Translation/" style="font-size: 10px;">Translation</a> <a href="/blog-hexo/tags/docker/" style="font-size: 10px;">docker</a> <a href="/blog-hexo/tags/generator-async-translation/" style="font-size: 10px;">generator async translation</a> <a href="/blog-hexo/tags/generator-translation/" style="font-size: 10px;">generator translation</a> <a href="/blog-hexo/tags/jison/" style="font-size: 15px;">jison</a> <a href="/blog-hexo/tags/js-generator-tanslation/" style="font-size: 10px;">js, generator, tanslation</a> <a href="/blog-hexo/tags/translation/" style="font-size: 20px;">translation</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/11/">November 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/10/">October 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/08/">August 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/07/">July 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/06/">June 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/blog-hexo/2016/08/03/fix-docker-x509-error/">fix-docker-x509-error</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/29/Parsing-text-table-with-jison-3/">Parsing-text-table-with-jison-3</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/28/Parsing-text-table-with-jison-2/">Parsing-text-table-with-jison-2</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/21/Parsing-text-table-with-jison/">Parsing-text-table-with-jison</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2015/10/31/Tail-Recursion-in-Haskell/">Tail Recursion in Haskell</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 Xiaochen Nie<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/blog-hexo/" class="mobile-nav-link">Home</a>
+  
+    <a href="/blog-hexo/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/blog-hexo/fancybox/jquery.fancybox.css">
+  <script src="/blog-hexo/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/blog-hexo/js/script.js"></script>
+
+  </div>
+</body>
+</html>

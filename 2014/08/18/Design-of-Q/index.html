@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Design-of-Q | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="/*本文档的目的是通过增量的、回顾其主要设计决策的方式来构建一个promise库，以此解释promises如何工作以及为何采用这样独特的方式实现。旨在让用户可以自由的体验到不同的实现方式以便满足其自身的需求，而不必错过任何重要的细节。
+-
+设想一下你正在编写一个无法立即返回一个值的函数。最显而易见的API是：将最终结果传递到一个作为参数的回调函数中，来代替将其返回。*/
+var oneOneSec">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Design-of-Q">
+<meta property="og:url" content="http://nnabuuu.github.io/blog-hexo/2014/08/18/Design-of-Q/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="/*本文档的目的是通过增量的、回顾其主要设计决策的方式来构建一个promise库，以此解释promises如何工作以及为何采用这样独特的方式实现。旨在让用户可以自由的体验到不同的实现方式以便满足其自身的需求，而不必错过任何重要的细节。
+-
+设想一下你正在编写一个无法立即返回一个值的函数。最显而易见的API是：将最终结果传递到一个作为参数的回调函数中，来代替将其返回。*/
+var oneOneSec">
+<meta property="og:updated_time" content="2016-04-29T18:43:51.160Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Design-of-Q">
+<meta name="twitter:description" content="/*本文档的目的是通过增量的、回顾其主要设计决策的方式来构建一个promise库，以此解释promises如何工作以及为何采用这样独特的方式实现。旨在让用户可以自由的体验到不同的实现方式以便满足其自身的需求，而不必错过任何重要的细节。
+-
+设想一下你正在编写一个无法立即返回一个值的函数。最显而易见的API是：将最终结果传递到一个作为参数的回调函数中，来代替将其返回。*/
+var oneOneSec">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/blog-hexo/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/blog-hexo/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/blog-hexo/">Home</a>
+        
+          <a class="main-nav-link" href="/blog-hexo/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://nnabuuu.github.io/blog-hexo"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Design-of-Q" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2014/08/18/Design-of-Q/" class="article-date">
+  <time datetime="2014-08-19T02:58:48.000Z" itemprop="datePublished">2014-08-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Design-of-Q
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>/*<br>本文档的目的是通过增量的、回顾其主要设计决策的方式来构建一个promise库，以此解释promises如何工作以及为何采用这样独特的方式实现。旨在让用户可以自由的体验到不同的实现方式以便满足其自身的需求，而不必错过任何重要的细节。</p>
+<p>-</p>
+<p>设想一下你正在编写一个无法立即返回一个值的函数。最显而易见的API是：将最终结果传递到一个作为参数的回调函数中，来代替将其返回。<br>*/</p>
+<pre><code>var oneOneSecondLater = function (callback) {
+    setTimeout(function () {
+        callback(1);
+    }, 1000);
+};
+</code></pre><p>/*<br>这是一个解决这种琐碎问题的一个非常简单的方案，但它还有很多进步的空间。</p>
+<p>一个更通用的解决方案会同时为返回值以及被抛出的异常提供同样的工具（即回调函数）。有几个显而易见的方式来扩展回调模式以处理异常。其中一个是同时提供一个普通的回调函数(callback)以及一个处理错误的回调函数(errback)。<br>*/</p>
+<pre><code>var maybeOneOneSecondLater = function (callback, errback) {
+    setTimeout(function () {
+        if (Math.random() &lt; .5) {
+            callback(1);
+        } else {
+            errback(new Error(&quot;Can&apos;t provide one.&quot;));
+        }
+    }, 1000);
+};
+</code></pre><p>/*<br>还有其他的解决方案，区别在于将错误作为回调函数的一个参数传入，以位置或者“哨兵值“进行区分。但是，这样的解决方案没有一个事实上考虑了被抛出的异常。异常以及try/catch块的目的是延后明确处理异常的时间直到程序已经回到一个有意义尝试从异常中恢复的点。如果异常没有被处理，我们需要一些机制来隐式地传播异常。</p>
+<h1 id="Promises"><a href="#Promises" class="headerlink" title="Promises"></a>Promises</h1><p>考虑一个更普遍的解决方式，代替返回值或者抛出异常，函数返回一个表示函数最终结果的对象，要么成功，要么失败。这个对象，无论是从打比方还是命名的角度来说，就是一个最终要被处理的promise，我们可以在promise之上调用函数来观测它是被满足还是被拒绝。如果这个promise被拒绝而并没有被主动的观测到，那么其他衍生的promise会被因为一些原因被隐式地拒绝。</p>
+<p>在下面这个特殊的设计迭代中，我们将promise设计为一个带有以回调函数为参数的”then”函数的对象。<br>*/</p>
+<pre><code>var maybeOneOneSecondLater = function () {
+    var callback;
+    setTimeout(function () {
+        callback(1);
+    }, 1000);
+    return {
+        then: function (_callback) {
+            callback = _callback;
+        }
+    };
+};
+</code></pre><p>/*<br>这种设计有两个不足：</p>
+<ul>
+<li>第一个then的调用者决定被使用的回调函数。如果每一个被注册的回调函数都会被resolution通知到的话会更好。</li>
+<li>如果回调函数在promise被构造多于一秒之后注册，那么它不会被调用。</li>
+</ul>
+<p>一个更普遍的解决方式在于接受任意数量的回调函数并且允许他们无论在超时（更普遍的说<br>，resolution事件被触发）前或后均可注册。我们通过将promise设置为一个两种状态的对象来实现。</p>
+<p>一个promise最初处于unresolved状态，并且所有的回调函数都被加入一个pending状态观测者的数组中。当promise被resolve之后，所有的观测者都会被通知到。我们通过判断是否这个pending回调函数的队列存在的方式来区分状态是否被转换，我们在resolution之后会扔掉它（这个队列）。<br>*/</p>
+<pre><code>var maybeOneOneSecondLater = function () {
+    var pending = [], value;
+    setTimeout(function () {
+        value = 1;
+        for (var i = 0, ii = pending.length; i &lt; ii; i++) {
+            var callback = pending[i];
+            callback(value);
+        }
+        pending = undefined;
+    }, 1000);
+    return {
+        then: function (callback) {
+            if (pending) {
+                pending.push(callback);
+            } else {
+                callback(value);
+            }
+        }
+    };
+};
+</code></pre><p>/<em><br>这样已经足够好了，如果将其改为一个功能函数的话会非常有用处。一个deferred是一个拥有两个部分的对象：一个用来注册观测者，另一个用来将resolution通知观测者。<br>（见 design/q0.js）
+</em>/</p>
+<pre><code>var defer = function () {
+    var pending = [], value;
+    return {
+        resolve: function (_value) {
+            value = _value;
+            for (var i = 0, ii = pending.length; i &lt; ii; i++) {
+                var callback = pending[i];
+                callback(value);
+            }
+            pending = undefined;
+        },
+        then: function (callback) {
+            if (pending) {
+                pending.push(callback);
+            } else {
+                callback(value);
+            }
+        }
+    }
+};
+
+var oneOneSecondLater = function () {
+    var result = defer();
+    setTimeout(function () {
+        result.resolve(1);
+    }, 1000);
+    return result;
+};
+
+oneOneSecondLater().then(callback);
+</code></pre><p>/<em><br>现在这个resolve有一个瑕疵：它能够被调用多次，从而改变被promised了的结果。它没有能够符合“一个函数只能要么返回一个值要么抛出一个错误”的事实要求。我们可以通过只允许第一次调用来设定resolution的方式保护结果免于意外或者恶意的重置。
+</em>/</p>
+<pre><code>var defer = function () {
+    var pending = [], value;
+    return {
+        resolve: function (_value) {
+            if (pending) {
+                value = _value;
+                for (var i = 0, ii = pending.length; i &lt; ii; i++) {
+                    var callback = pending[i];
+                    callback(value);
+                }
+                pending = undefined;
+            } else {
+                throw new Error(&quot;A promise can only be resolved once.&quot;);
+            }
+        },
+        then: function (callback) {
+            if (pending) {
+                pending.push(callback);
+            } else {
+                callback(value);
+            }
+        }
+    }
+};
+</code></pre><p>/*<br>你可以设置一个参数，在这种情况下要么抛出一个错误或者忽略之后所有其他resolution。一个测试就是给予resolver一串worker，并竞争resolve该promise，而剩余的resolution会被忽略。如果你不想让这些worker知道谁获胜了，这也是可行的。下文中，所有的示例都会忽略多重resolution而不是抛出异常。</p>
+<p>现在，defer可以同时处理多resolution和多observation的情况。（见 design/q1.js）</p>
+<hr>
+<p>源于两个单独的立场，这个设计衍生出了几种不同的变化。第一种立场是：将promise和deferred中的resolver部分分离或者结合都是有用的。通过某种方式从其他值中识别promise也是有用的。</p>
+<p>-</p>
+<p>将promise从resolver中分离开允许我们在最小特权原则下进行编码。给予某人一个promise，应该仅仅给予他观测resolution的权力，而给予某人一个resolver，应该仅仅给予他决定resolition的权力。一方的权力绝不不应该被授予另一方。通过时间的检验我们发现，任何过度的授权都会不可避免地被滥用，并且这将会非常难以编写。</p>
+<p>然而，分离的不好之处在于，快速地废除promise对象会给垃圾回收器带来额外负担。</p>
+<p>-</p>
+<p>以外，有非常多的方式来区分promise以及其他值。最显而易见并且最重要的区分方式是使用原型继承（design/q2.js）<br>*/</p>
+<pre><code>var Promise = function () {
+};
+
+var isPromise = function (value) {
+    return value instanceof Promise;
+};
+
+var defer = function () {
+    var pending = [], value;
+    var promise = new Promise();
+    promise.then = function (callback) {
+        if (pending) {
+            pending.push(callback);
+        } else {
+            callback(value);
+        }
+    };
+    return {
+        resolve: function (_value) {
+            if (pending) {
+                value = _value;
+                for (var i = 0, ii = pending.length; i &lt; ii; i++) {
+                    var callback = pending[i];
+                    callback(value);
+                }
+                pending = undefined;
+            }
+        },
+        promise: promise
+    };
+};
+</code></pre><p>/*<br>使用原型继承的缺点在于它使得一个项目中只能使用一种promise库。这会难以实施，使实施依赖变成一种灾难。</p>
+<p>另一种实现方式是使用duck-typing，通过是否存在某种约定命名的方法来区分promise以及其他对象。在我们的案例中，CommonJS/Promises/A创立了通过是否使用了”then”的方式来区分promise以及其他值。这个方式的缺点是无法判断那些只是碰巧有一个”then”方法的对象。在实际状况中，这并不是一个问题，并且这种实现”可以then”的微小差异是可以被管理的。<br>*/</p>
+<pre><code>var isPromise = function (value) {
+    return value &amp;&amp; typeof value.then === &quot;function&quot;;
+};
+
+var defer = function () {
+    var pending = [], value;
+    return {
+        resolve: function (_value) {
+            if (pending) {
+                value = _value;
+                for (var i = 0, ii = pending.length; i &lt; ii; i++) {
+                    var callback = pending[i];
+                    callback(value);
+                }
+                pending = undefined;
+            }
+        },
+        promise: {
+            then: function (callback) {
+                if (pending) {
+                    pending.push(callback);
+                } else {
+                    callback(value);
+                }
+            }
+        }
+    };
+};
+</code></pre><p>/<em><br>下一个大的步骤是使它可以简单的生成promise，使用从旧的promise中获取的值来构造新的promise。假设你收到从数个函数调用中得到的两个数字的promise，我们应该可以创建他们的和的promise。考虑一下这用callback是怎样实现的。
+</em>/</p>
+<pre><code>var twoOneSecondLater = function (callback) {
+    var a, b;
+    var consider = function () {
+        if (a === undefined || b === undefined)
+            return;
+        callback(a + b);
+    };
+    oneOneSecondLater(function (_a) {
+        a = _a;
+        consider();
+    });
+    oneOneSecondLater(function (_b) {
+        b = _b;
+        consider();
+    });
+};
+
+twoOneSecondLater(function (c) {
+    // c === 2
+});
+</code></pre><p>有非常多的原因证明，这种实现是非常脆弱的，特别是它需要明确的编码来进行通知（在本例中是使用一个哨兵值），是否是一个回调函数被调用了。此外，我们必须注意考虑到在事件循环结束前被发出的条件：<code>consider</code>函数需要在它被使用之前出现。</p>
+<p>在下面的几个步骤中，我们会能够用promise实现它，使用更少的代码以及隐式地处理错误传递。<br>*/</p>
+<pre><code>var a = oneOneSecondLater();
+var b = oneOneSecondLater();
+var c = a.then(function (a) {
+    return b.then(function (b) {
+        return a + b;
+    });
+});
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/08/18/Design-of-Q/" data-id="cirfvhfms0000bknbeb5rt7pb" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/blog-hexo/2014/10/07/embracing-async-in-javascript-part-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          拥抱JavaScript中的异步（译）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/blog-hexo/2014/07/05/The-introduction-to-Reactive-Programming-you-ve-been-missing/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">[译]函数响应式编程</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Haskell/">Haskell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/NodeJS/">NodeJS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Translation/">Translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-async-translation/">generator async translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-translation/">generator translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/jison/">jison</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/js-generator-tanslation/">js, generator, tanslation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/blog-hexo/tags/Haskell/" style="font-size: 10px;">Haskell</a> <a href="/blog-hexo/tags/NodeJS/" style="font-size: 15px;">NodeJS</a> <a href="/blog-hexo/tags/Translation/" style="font-size: 10px;">Translation</a> <a href="/blog-hexo/tags/docker/" style="font-size: 10px;">docker</a> <a href="/blog-hexo/tags/generator-async-translation/" style="font-size: 10px;">generator async translation</a> <a href="/blog-hexo/tags/generator-translation/" style="font-size: 10px;">generator translation</a> <a href="/blog-hexo/tags/jison/" style="font-size: 15px;">jison</a> <a href="/blog-hexo/tags/js-generator-tanslation/" style="font-size: 10px;">js, generator, tanslation</a> <a href="/blog-hexo/tags/translation/" style="font-size: 20px;">translation</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/11/">November 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/10/">October 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/08/">August 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/07/">July 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/06/">June 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/blog-hexo/2016/08/03/fix-docker-x509-error/">fix-docker-x509-error</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/29/Parsing-text-table-with-jison-3/">Parsing-text-table-with-jison-3</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/28/Parsing-text-table-with-jison-2/">Parsing-text-table-with-jison-2</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/21/Parsing-text-table-with-jison/">Parsing-text-table-with-jison</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2015/10/31/Tail-Recursion-in-Haskell/">Tail Recursion in Haskell</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 Xiaochen Nie<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/blog-hexo/" class="mobile-nav-link">Home</a>
+  
+    <a href="/blog-hexo/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/blog-hexo/fancybox/jquery.fancybox.css">
+  <script src="/blog-hexo/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/blog-hexo/js/script.js"></script>
+
+  </div>
+</body>
+</html>

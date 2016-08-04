@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://nnabuuu.github.io/blog-hexo/page/2/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/blog-hexo/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/blog-hexo/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/blog-hexo/">Home</a>
+        
+          <a class="main-nav-link" href="/blog-hexo/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://nnabuuu.github.io/blog-hexo"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-Getting-Started-with-Koa,-part-1---Generators" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2014/12/05/Getting-Started-with-Koa,-part-1---Generators/" class="article-date">
+  <time datetime="2014-12-06T07:58:10.000Z" itemprop="datePublished">2014-12-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog-hexo/2014/12/05/Getting-Started-with-Koa,-part-1---Generators/">Getting Started with Koa, part 1 - Generators</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#开始使用Koa，第一部分 - Generators （译）</p>
+<p>原文地址：<a href="http://blog.risingstack.com/introduction-to-koa-generators/" target="_blank" rel="external">http://blog.risingstack.com/introduction-to-koa-generators/</a></p>
+<p>原作者： Gellért Hegyi <a href="https://twitter.com/native_cat" target="_blank" rel="external">https://twitter.com/native_cat</a></p>
+<p><a href="http://koajs.com/" target="_blank" rel="external">Koa</a>是一个小巧而简单的web框架，由<a href="http://expressjs.com/" target="_blank" rel="external">Express</a>的team带来，其目标是创造一个更加现代的开发web的方式。</p>
+<p>在本系列中，你会了解Koa的机制，学习如何高效正确地使用它来编写web应用。第一部分包含一些基本概念（generators, thunks）</p>
+<h2 id="为什么是Koa？"><a href="#为什么是Koa？" class="headerlink" title="为什么是Koa？"></a>为什么是Koa？</h2><p>Koa包含的关键特性允许你简单并且快速地编写web应用（并且不包含callback）。它使用来自于<a href="http://wiki.ecmascript.org/doku.php?id=harmony:specification_drafts" target="_blank" rel="external">ES6</a>的新语言元素使得控制逻辑管理在Node中比其他框架更加容易。</p>
+<p>Koa自身非常小巧，这是是因为不同于试下流行的web框架（例如express），Koa追随高度模块化的原则，意味着每一个模块只做一件事情。将这句话记在脑中，让我们开始吧！</p>
+<h2 id="你好Koa"><a href="#你好Koa" class="headerlink" title="你好Koa"></a>你好Koa</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> koa = <span class="built_in">require</span>(<span class="string">'koa'</span>);  </span><br><span class="line"><span class="keyword">var</span> app = koa();</span><br><span class="line"></span><br><span class="line">app.use(<span class="function"><span class="keyword">function</span> *(<span class="params"></span>) </span>&#123;  </span><br><span class="line">  <span class="keyword">this</span>.body = <span class="string">'Hello World'</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.listen(<span class="number">3000</span>);</span><br></pre></td></tr></table></figure>
+<p>在我们开始之前，为了运行示例以及你自己的ES6代码，你需要使用0.11.9或更高的版本并设置<code>--harmony</code>标志位。</p>
+<p>你可以从上面的示例中看到，这里没有什么让人感兴趣的点，除了在函数声明之后比较陌生的<code>*</code>号。这样，就使这个函数变成了一个generator函数。</p>
+<h2 id="Generators"><a href="#Generators" class="headerlink" title="Generators"></a>Generators</h2><pre><code>当你执行函数时，如果能够在任何点暂停它，进行一些其他计算，做一些其他操作，再返回到这个函数里，并带有一些值，然后继续，这样不好吗？
+</code></pre><p>这是另外一种迭代器（像循环一样）。那就是一个generator做的最好的事情，它在ES6中被实现，因此我们可以轻松使用它。</p>
+<p>让我们来构造一些generators！首先我们需要创建你的generator函数，它看起来和普通的函数完全一样，除了一点，你需要在<code>function</code>关键词后放置一个<code>*</code>符号。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span> (<span class="params"></span>) </span>&#123; &#125;</span><br></pre></td></tr></table></figure>
+<p>现在我们就有了一个<em>generator函数</em>。当我们调用这个函数时它会返回一个迭代对象，因此不像普通的函数调用，当我们调用一个generator时，代码并没有开始执行，其原因我们会在之后讲述，我们将手动地遍历它。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span> (<span class="params">arg</span>) </span>&#123; &#125;  <span class="comment">// generator function  </span></span><br><span class="line"><span class="keyword">var</span> bar = foo(<span class="number">123</span>);      <span class="comment">// iterator  object</span></span><br></pre></td></tr></table></figure>
+<p>通过它返回的对象<code>bar</code>，我们可以遍历这个函数。为了开始并且迭代到下一个generator步骤我们可以简单的调用<code>bar</code>的<code>next()</code>方法，当<code>next()</code>被调用时，函数开始执行，或从上一次停止的地方执行，直到它到达一个暂停点。</p>
+<p>但是除了继续，它也返回一个对象，该对象给予有关generator的信息。它有一个<code>value</code>属性，标识当我们暂停generator时当前迭代的值。另外一个布尔值是<code>done</code>，它用来标识generator已经结束执行。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span> (<span class="params">arg</span>) </span>&#123; <span class="keyword">return</span> arg &#125;  </span><br><span class="line"><span class="keyword">var</span> bar = foo(<span class="number">123</span>);  </span><br><span class="line">bar.next();          <span class="comment">// &#123; value: 123, done: true &#125;</span></span><br></pre></td></tr></table></figure>
+<p>像我们看到的那样，实际上示例那里并没有任何暂停，因此当它返回一个对象的时候<code>done</code>就变成了<code>true</code>。如果你在generator中指定一个return值，它会在最后一个迭代对象（当<code>done</code>是<code>true</code>的时候）中被返回。现在我们要做的只是来暂停一个generator。和我们所说的那样，它就像是遍历一个函数并且在每个迭代周期它产出（yield）一个值（在我们暂停的地方），因此我们使用<code>yield</code>关键词进行暂停。</p>
+<h2 id="yield"><a href="#yield" class="headerlink" title="yield"></a>yield</h2><pre><code>yield [[expression]];
+</code></pre><p>调用<code>next()</code>会使generator开始执行并且它会运行直到遇到一个<code>yield</code>。然后它返回一个带有<code>value</code>和<code>done</code>属性的对象，这里<code>value</code>持有表达式的值。该表达式可以是任何形式。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">foo</span> (<span class="params"></span>) </span>&#123;  </span><br><span class="line">  <span class="keyword">var</span> index = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> (index &lt; <span class="number">2</span>) &#123;</span><br><span class="line">    <span class="keyword">yield</span> index++;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> bar =  foo();</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(bar.next());    <span class="comment">// &#123; value: 0, done: false &#125;  </span></span><br><span class="line"><span class="built_in">console</span>.log(bar.next());    <span class="comment">// &#123; value: 1, done: false &#125;  </span></span><br><span class="line"><span class="built_in">console</span>.log(bar.next());    <span class="comment">// &#123; value: undefined, done: true &#125;</span></span><br></pre></td></tr></table></figure>
+<p>当我们再一次调用<code>next()</code>时，<em>yield值</em>会在generator中返回并且它会继续执行。也可以在generator中从<em>迭代对象</em>接受一个值（使用<code>next(val)</code>），然后当它geneator继续时它会被返回到generator中。</p>
+<h2 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h2><p>如果你在迭代对象的值中发现了错误，你可以使用<code>throw()</code>方法并在generator中捕获这个错误。这使得错误处理在generator中是非常友好的。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span> (<span class="params"></span>) </span>&#123;  </span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    x = <span class="keyword">yield</span> <span class="string">'asd B'</span>;   <span class="comment">// Error will be thrown</span></span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">    <span class="keyword">throw</span> err;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> bar =  foo();  </span><br><span class="line"><span class="keyword">if</span> (bar.next().value == <span class="string">'B'</span>) &#123;  </span><br><span class="line">  bar.throw(<span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">"it's B!"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="for-…-of"><a href="#for-…-of" class="headerlink" title="for … of"></a>for … of</h2><p>在ES6中有一个循环类别，可以用来在generator中进行遍历，即<code>for...of</code>循环。该遍历器会进行执行直到<code>done</code>是<code>false</code>。留意一点，如果你使用这个循环，你将无法在一个<code>next()</code>的调用中中传递值，并且该循环会抛弃返回值。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span> (<span class="params"></span>) </span>&#123;  </span><br><span class="line">  <span class="keyword">yield</span> <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">yield</span> <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">yield</span> <span class="number">3</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (v <span class="keyword">of</span> foo()) &#123;  </span><br><span class="line">  <span class="built_in">console</span>.log(v);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="yeild"><a href="#yeild" class="headerlink" title="yeild *"></a>yeild *</h2><p>如之前所说，你可以yield几乎任何东西，甚至可以yield一个generator，但是那样你就必须使用<code>yield *</code>，这被称为代理。你正在代理到另一个generator上，因此你可以使用一个迭代对象对多个generator进行遍历。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">bar</span> (<span class="params"></span>) </span>&#123;  </span><br><span class="line">  <span class="keyword">yield</span> <span class="string">'b'</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span> (<span class="params"></span>) </span>&#123;  </span><br><span class="line">  <span class="keyword">yield</span> <span class="string">'a'</span>; </span><br><span class="line">  <span class="keyword">yield</span> *bar();</span><br><span class="line">  <span class="keyword">yield</span> <span class="string">'c'</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (v <span class="keyword">of</span> foo()) &#123;  </span><br><span class="line">  <span class="built_in">console</span>.log(v);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Thunks"><a href="#Thunks" class="headerlink" title="Thunks"></a>Thunks</h2><p>为了完全理解Koa，thunks是另外一种你必须掌握的概念。它们主要用来帮助调用另外一个函数。你可以把它和<em>lazy evaluation</em>联系起来。对我们来说，最重要的是它们可以用来在一个函数调用的外部从参数列表中移动node的回调函数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> read = <span class="function"><span class="keyword">function</span> (<span class="params">file</span>) </span>&#123;  </span><br><span class="line">  <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params">cb</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">require</span>(<span class="string">'fs'</span>).readFile(file, cb);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">read(<span class="string">'package.json'</span>)(<span class="function"><span class="keyword">function</span> (<span class="params">err, str</span>) </span>&#123; &#125;)</span><br></pre></td></tr></table></figure>
+<p>有一个小型的模块叫做<a href="https://github.com/visionmedia/node-thunkify" target="_blank" rel="external">thunkify</a>，它将一个普通的node函数转化为一个thunk。你可以质疑它的使用，但是其结果是它可以很好的移除generator中的回调。</p>
+<p>首先，我们需要将想要在generator中使用的node函数装换为一个<em>thunk</em>。然后在generator中使用这个thunk，就像它会返回一个值一样，否则我们就必须进入到回调中了。当调用起始<code>next()</code>时，它的value会是一个函数，它的参数是<em>被thunkified的</em>函数的回调。在回调中我们可以检验错误（并且进行<code>throw</code>，如果需要的话）或者用接收到的值调用<code>next()</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> thunkify = <span class="built_in">require</span>(<span class="string">'thunkify'</span>);  </span><br><span class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);  </span><br><span class="line"><span class="keyword">var</span> read = thunkify(fs.readFile);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">bar</span> (<span class="params"></span>) </span>&#123;  </span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> x = <span class="keyword">yield</span> read(<span class="string">'input.txt'</span>);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">    <span class="keyword">throw</span> err;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">console</span>.log(x);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> gen = bar();  </span><br><span class="line">gen.next().value(<span class="function"><span class="keyword">function</span> (<span class="params">err, data</span>) </span>&#123;  </span><br><span class="line">  <span class="keyword">if</span> (err) gen.throw(err);</span><br><span class="line">  gen.next(data.toString());</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>慢慢花时间了解这个例子的每一个细节，因为这对于理解Koa非常重要。如果你专注于示例的generator部分，你会看到它非常棒。它有同步代码的简洁，优秀的错误捕获，而它仍然是异步执行的。</p>
+<h2 id="待续…"><a href="#待续…" class="headerlink" title="待续…"></a>待续…</h2><p>最后的例子看起来很繁琐，但是在下一部分我们会找到一些工具来处理繁琐的部分，仅剩优美的部分。并且我们最终会明白Koa以及它流畅的机制，正事该机制使得web开发如此简单。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/12/05/Getting-Started-with-Koa,-part-1---Generators/" data-id="cirfvhfn60003bknbagvd47gx" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Nodejs-in-flames" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2014/11/24/Nodejs-in-flames/" class="article-date">
+  <time datetime="2014-11-25T06:53:21.000Z" itemprop="datePublished">2014-11-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog-hexo/2014/11/24/Nodejs-in-flames/">火焰中的Nodejs</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#火焰中的Nodejs</p>
+<p>原文链接：<a href="http://techblog.netflix.com/2014/11/nodejs-in-flames.html" target="_blank" rel="external">http://techblog.netflix.com/2014/11/nodejs-in-flames.html</a></p>
+<p>我们一直在忙于用Node.js构建我们的下一代Netflix.com网络应用。你可以从我们几个月前放在NodeConf.eu的<a href="https://www.youtube.com/watch?v=gtjzjiTI96c&amp;list=PLfXiENmg6yyUpIVY9XVOkbdmBPx6PUm9_" target="_blank" rel="external">这个演讲</a>中了解更多。今天，我想要分享一些我们在新应用栈的性能调优中学到的一些东西。</p>
+<p>我们首先得知了一个可能的问题，当我们注意到我们的Node.js应用中的请求延迟会随时间逐渐增加。并且，应用比起我们的期望消耗了更多的CPU，并且CPU消耗的增长与更高的延迟是密切相关的。我们一边使用循环重启的方式作为一个临时解决方案，一边努力地在我们Linux EC2环境中使用新的性能检测工具与技术想要找到问题的根源。</p>
+<p>##火焰上升</p>
+<p>我们留意到我们的Node.js应用请求延迟随着时间慢慢增长。特别的，一些方法的延迟会从刚开始时的1ms每小时增加到10ms。并且我们也发现了相关的CPU使用率的增长。</p>
+<p><img src="https://raw.githubusercontent.com/nnabuuu/blog-hexo/gh-pages/img/nodejs-in-flames/skitch.png" alt="skitch.png"></p>
+<p>这幅图描绘了对于每个时间区域的请求延迟（以ms为单位）。每种颜色和一个不同的AWS AZ相关。你可以看到延迟稳定地以每小时10ms的速度增长，在实例重启之前能达到60ms的峰值。</p>
+<p>##浇灭火焰</p>
+<p>最初我们猜想我们自己的request handler里面有一些错误，比如memory leak，因此导致了延迟的增长。我们通过对应用单独的压力测试尝试验证这一猜想，增加了一些系统变量监控：既有我们的request handler单独的延迟，也有整个request的延迟。同时，我们将Node.js的heap size增加到32Gb。</p>
+<p>我们发现我们的request handler的延迟在整个性能测试的周期中都是一个常量1ms。我们同时也看到进程的heap size处在约1.2Gb的常量中。但是，整体的request延迟和CPU使用率持续的增长。这宣告了我们自己的handler无罪，并且将问题指向了更深处。</p>
+<p>有一些其他的东西消耗了额外的60ms来处理这个request。我们所需要的是一个方法来描述应用的CPU使用率并且将其可视化以便识别我们在哪里部分我们消耗了CPU绝大多数的时间。进入CPU火焰图和Linux <a href="https://perf.wiki.kernel.org/index.php/Main_Page" target="_blank" rel="external">Perf Events</a>来进行急救。</p>
+<p>对于这些不熟悉火焰图的人，最好的了解方式是阅读Brendan Gregg的<a href="http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html" target="_blank" rel="external">精彩的文章</a>，这篇文章解释了它们是什么 - 这里我们给出一个快速的总结（从文章中直接提取）。</p>
+<ul>
+<li>每一个方块表示一个stack中的函数（一个”stack框架”）</li>
+<li>y轴显示的是stack深度（stack中的框架数量）。最上层的方块显示了当前在CPU的函数。其下面的所有都是它的祖先，紧贴着它下面的是它的父函数，就像我们之前看到的stack trace一样。</li>
+<li>x轴显示的是样例群体。它并不是像绝大多数图片那样从左到右的显示时间流逝。它们的左右顺序不表示任何含义（仅仅是按照字母表顺序排列）。</li>
+<li>如果有多个CPU并行执行和采样的话，样本数量可能超过所耗时间。</li>
+<li>颜色并不明显，它们是随机选择成为暖色调。它被成为“火焰图”是因为它显示了现在CPU什么更”hot”。并且它是可交互的，鼠标放置于SVG之上可以看到细节。</li>
+</ul>
+<p>之前的Node.js火焰图只被用在使用了DTrace的系统上，使用Dave Pacheco的<a href="http://dtrace.org/blogs/dap/2012/04/25/profiling-node-js/" target="_blank" rel="external">Node.js jstack()支持</a>。然而，最近Google v8组添加了v8的perf_events支持，它包含Linux上类似的Javascript symbol。Brendan写了关于如何使用这个新支持特性的指南，在Node.js版本0.11.13中到来。<a href="http://www.brendangregg.com/blog/2014-09-17/node-flame-graphs-on-linux.html" target="_blank" rel="external">在Linux中创建Node.js火焰图</a>。</p>
+<p><img src="https://raw.githubusercontent.com/nnabuuu/blog-hexo/gh-pages/img/nodejs-in-flames/flame.png" alt="flame.png"></p>
+<p>这里是火焰图的<a href="http://cdn.nflximg.com/ffe/siteui/blog/yunong/200mins.svg" target="_blank" rel="external">原始SVG</a>。我们立刻就注意到在我们的应用中有一些非常高的stack（y轴），我们也能看到我们耗费了非常多的时间在这些stack上（x轴）。更进一步的研究发现，看起来这些stack框全是对Express.js的router handle以及router handle.next函数的引用。Express.js的源代码中我们看到了一些有趣的“花边新闻”。</p>
+<ul>
+<li>所有endpoint的Route handler都储存在<strong>一个全局</strong>的数组中</li>
+<li>Express.js通过递归的方式进行遍历并调用这些handler直到它发现正确的路由handler</li>
+</ul>
+<p>对于这种应用场景，一个全局数组并不是一个理想的数据结构。我们不清楚为什么Express.js不选择使用一个常量时间的数据结构例如map来保存它的handler。每个请求都需要在路由数组中进行昂贵的O(n)查找以便发现它的route handler。更为复杂的是，数组是通过递归进行遍历的。这也就解释了为什么我们会在火焰图中看到如此高的stack。有趣的是，Express。js甚至允许你对一个路由设置很多相同的route handler。你可能不经意地将将请求链设置成这样：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[a, b, c, c, c, c, d, e, f, g, h]</span><br></pre></td></tr></table></figure>
+<p>对于路由c的请求会在第一次发现c handler时停止（数组的位置2）。但是对于路由d 的请求会在位置6处停止，在轮询a,b以及非常多的c之间无用地耗费了时间。我们通过执行下面的纯express应用来验证它。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>);</span><br><span class="line"><span class="keyword">var</span> app = express();</span><br><span class="line">app.get(<span class="string">'/foo'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">   res.send(<span class="string">'hi'</span>);</span><br><span class="line">&#125;); </span><br><span class="line"><span class="comment">// add a second foo route handler</span></span><br><span class="line">app.get(<span class="string">'/foo'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">   res.send(<span class="string">'hi2'</span>);</span><br><span class="line">&#125;);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'stack'</span>, app._router.stack);</span><br><span class="line">app.listen(<span class="number">3000</span>);</span><br></pre></td></tr></table></figure>
+<p>执行该Express.js应用来返回这些route handler。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">stack [ &#123; keys: [], regexp: <span class="regexp">/^\/?(?=/</span>|$)/i, handle: [<span class="built_in">Function</span>: query] &#125;,</span><br><span class="line"> &#123; keys: [],</span><br><span class="line">   regexp: <span class="regexp">/^\/?(?=/</span>|$)/i,</span><br><span class="line">   handle: [<span class="built_in">Function</span>: expressInit] &#125;,</span><br><span class="line"> &#123; keys: [],</span><br><span class="line">   regexp: <span class="regexp">/^\/foo\/?$/i</span>,</span><br><span class="line">   handle: [<span class="built_in">Function</span>],</span><br><span class="line">   route: &#123; path: <span class="string">'/foo'</span>, stack: [<span class="built_in">Object</span>], methods: [<span class="built_in">Object</span>] &#125; &#125;,</span><br><span class="line"> &#123; keys: [],</span><br><span class="line">   regexp: <span class="regexp">/^\/foo\/?$/i</span>,</span><br><span class="line">   handle: [<span class="built_in">Function</span>],</span><br><span class="line">   route: &#123; path: <span class="string">'/foo'</span>, stack: [<span class="built_in">Object</span>], methods: [<span class="built_in">Object</span>] &#125; &#125; ]</span><br></pre></td></tr></table></figure>
+<p>注意到这里对/foo有两个完全一样的route handler。如果Express.js在对于一个路由有多余一个route handler时可以抛出一个异常就好了。</p>
+<p>到现在为止，我们主要的猜想变成了handler数组随着时间在增长，由于每个handler都被调用，因此导致了延迟的增长。极有可能我们在代码中的某处泄露了handler，可能是由于重复handler问题导致的。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">[...</span><br><span class="line">&#123; handle: [<span class="built_in">Function</span>: serveStatic],</span><br><span class="line">   name: <span class="string">'serveStatic'</span>,</span><br><span class="line">   params: <span class="literal">undefined</span>,</span><br><span class="line">   path: <span class="literal">undefined</span>,</span><br><span class="line">   keys: [],</span><br><span class="line">   regexp: &#123; <span class="regexp">/^\/?(?=\/|$)/i</span> fast_slash: <span class="literal">true</span> &#125;,</span><br><span class="line">   route: <span class="literal">undefined</span> &#125;,</span><br><span class="line"> &#123; handle: [<span class="built_in">Function</span>: serveStatic],</span><br><span class="line">   name: <span class="string">'serveStatic'</span>,</span><br><span class="line">   params: <span class="literal">undefined</span>,</span><br><span class="line">   path: <span class="literal">undefined</span>,</span><br><span class="line">   keys: [],</span><br><span class="line">   regexp: &#123; <span class="regexp">/^\/?(?=\/|$)/i</span> fast_slash: <span class="literal">true</span> &#125;,</span><br><span class="line">   route: <span class="literal">undefined</span> &#125;,</span><br><span class="line"> &#123; handle: [<span class="built_in">Function</span>: serveStatic],</span><br><span class="line">   name: <span class="string">'serveStatic'</span>,</span><br><span class="line">   params: <span class="literal">undefined</span>,</span><br><span class="line">   path: <span class="literal">undefined</span>,</span><br><span class="line">   keys: [],</span><br><span class="line">   regexp: &#123; <span class="regexp">/^\/?(?=\/|$)/i</span> fast_slash: <span class="literal">true</span> &#125;,</span><br><span class="line">   route: <span class="literal">undefined</span> &#125;,</span><br><span class="line">...</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>有些东西在以10次每小时的速度添加同样的Express.js静态route handler中。更进一步的基准测试显示了仅仅是遍历每一个handler耗费约1ms的CPU时间。这和我们所见的延迟问题是相关联的，我们看到的响应时间的增加是每小时10ms。</p>
+<p>最终结果是：它是由我们代码中的一个周期性函数（10次/小时）导致的。其主要的目的是为了从一个外部源刷新我们的route handler。它是通过从数组中删除旧的handler并添加新的handler来实现的。不幸地是，它在每次执行时也在不经意间增加了一个同样路径的静态route handler。由于Express.js允许对同一路径含有多个route handler，这些重复的handler被全部添加进了数组中。更糟糕的是，它们是被添加到了其他API handler的前面，这表示在任何我们server的请求被执行之前，它们全部都会被调用到。</p>
+<p>这完全解释了为什么我们的清秋延迟是以每小时10ms的速度增长的。事实上，当我们修复代码使之停止添加重复route handler之后，我们的延迟以及CPU使用率的增长都消失了。</p>
+<p><img src="https://raw.githubusercontent.com/nnabuuu/blog-hexo/gh-pages/img/nodejs-in-flames/graph.png" alt="graph.png"></p>
+<p>现在，在我们部署了修复代码之后，我们的延迟降低到了1ms并且能够一直保持了。</p>
+<h2 id="当烟雾散去"><a href="#当烟雾散去" class="headerlink" title="当烟雾散去"></a>当烟雾散去</h2><p>我们从这个悲惨的经验中学到了什么呢？首先，在我们将依赖对象放入生产环境之前，我们必须完全的了解它。我们对Express.js的API进行了错误的假设而没有深度到代码基础中。结果，我们错误的使用了Express.js的API就是我们最终性能问题的根源。</p>
+<p>第二，在处理性能问题时，可观察性是至关重要的。火焰图使我们能够洞察到我们的应用程序在哪部分花费了最多的时间在CPU上。难以想象在没有能够对Node.js的stack进行采样以及用火焰图可视化他们的条件下我们该如何解决这个问题。</p>
+<p>为了进一步提高可观察性，我们迁移到了Restify，它给了我们更多的同茶行，可见性以及对我们应用程序的操作性。这已经超出了本文的范围，因此请期待我们之后关于如何在Netlix中利用Node.js文章。</p>
+<p>本文原作者: Yunong Xiao <a href="https://twitter.com/YunongX" target="_blank" rel="external">@yunongx</a></p>
+<h4 id="脚注："><a href="#脚注：" class="headerlink" title="脚注："></a>脚注：</h4><p>1 特别的，注意在这个<a href="https://github.com/strongloop/express/blob/d40dc65/lib/router/route.js#L81-L102" target="_blank" rel="external">代码片段</a>中，next()被递归地调用来遍历名为stack的全局route handler数组。</p>
+<p>2 Restify提供了非常多的机制以获取你的应用的可见性。从<a href="http://mcavage.me/presentations/dtrace_conf_2012-04-03/" target="_blank" rel="external">DTrace</a>支持，到与<a href="https://github.com/trentm/node-bunyan" target="_blank" rel="external">node-bunyan</a>日志框架集成。 </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/11/24/Nodejs-in-flames/" data-id="cirfvhfnr000abknbk8619201" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/Translation/">Translation</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Hackers-guide-to-Neural-Networks" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2014/11/16/Hackers-guide-to-Neural-Networks/" class="article-date">
+  <time datetime="2014-11-16T21:51:07.000Z" itemprop="datePublished">2014-11-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog-hexo/2014/11/16/Hackers-guide-to-Neural-Networks/">神经网络骇客指南（翻译中）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>原文见：<a href="http://karpathy.github.io/neuralnets/" target="_blank" rel="external">http://karpathy.github.io/neuralnets/</a></p>
+<p>##神经网络骇客指南（译）</p>
+<p>各位好，我是一名<a href="http://cs.stanford.edu/people/karpathy/" target="_blank" rel="external">斯坦福的计算机科学的博士</a>。作为我研究的一部分，我已经在深度学习上研究了好几年，我有几个“pet project”，其中一个是<a href="http://convnetjs.com/" target="_blank" rel="external">ConvNetJS</a> - 一个用来训练神经网络的Javascript库。Javascript允许一个人轻松地将现在所发生的事情可视化，并且可以实现多样的参数选择设置，但是我仍然经常听到人们想要一些更加彻底的话题。这篇文章（我打算慢慢地写到几个章节那么长）是我一份谦逊地尝试。我把它放在网上而不是以一个PDF文件的形式呈现是因为，所有的图书都应该这样，并且最终希望它能包括一些动画和演示。</p>
+<p>我对神经网络的个人经验是：当我抛开一切整篇、密集的反向传播方程的推导，而仅仅开始写代码时，一切都清晰多了。因此这个教程会包含<strong>非常少的数学</strong>(我不认为这是有必要的，而且有些时候会混淆一些简单的概念)。由于我的背景是计算机科学以及物理，我会以<strong>骇客的角度</strong>来看待问题。我会围绕着代码以及物理直觉而不是数学推导来展示。基本上我会以一种“我刚开始学习时希望被那样教导”的方式努力地呈现算法。</p>
+<pre><code>“...当我开始编写代码时一切都清晰多了。”
+</code></pre><p>你可能会想急切地跳进去学习神经网络、反向传播、它们如何能应用于数据集上、等等。但是在我们到达那里之前，我想先让我们忘掉这一切。让我们后退一步，明白什么是真正的核心。让我们从元电路开始谈起。</p>
+<p>###第一章：元电路</p>
+<p>在我看来，思考神经网络的最佳方式是将其比作元电路。在这里，实际的值（而不是布尔值<code>{0,1}</code>）沿着边沿“流动”并且在门出交汇。但是不同于门电路的<code>与</code>、<code>或</code>、<code>非</code>等，我们的二进制门包含例如<code>*</code>（乘）、<code>+</code>（加）、<code>max</code>或者一元门例如<code>exp</code>等等。不同于基本的布尔电路，我们最终也会有<strong>gradients</strong>在同样的边沿流动，但是是向相反的方向。这已经有点超前了，我们还是先专注一下，从简单的开始。</p>
+<h4 id="基本情况：电路中的单门"><a href="#基本情况：电路中的单门" class="headerlink" title="基本情况：电路中的单门"></a>基本情况：电路中的单门</h4><p>让我们先考虑一个单一的、简单的、包含一个门的电路。示例如下：</p>
+<p><img src="/img/Hacker-s-guide-to-Neural-Networks/1.png" alt="simple circuit with one gate"></p>
+<p>这个电路接受两个实际值<code>x</code>和<code>y</code>并且在<code>*</code>门中计算<code>x * y</code>。 Javascript的版本会非常简单，看起来像这样：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> forwardMultiplyGate = <span class="function"><span class="keyword">function</span>(<span class="params">x, y</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> x * y;</span><br><span class="line">&#125;;</span><br><span class="line">forwardMultiplyGate(<span class="number">-2</span>, <span class="number">3</span>); <span class="comment">// returns -6. Exciting.</span></span><br><span class="line"><span class="string">``</span><span class="string">`	</span><br><span class="line">以数学的形式我们可以认为这个门实现了函数：</span><br><span class="line"></span><br><span class="line">	f(x, y) = x * y</span><br><span class="line"></span><br><span class="line">在这个例子中，我们所有的门都会接受一个或两个输入，并产生一个**单一**的输出值。</span><br><span class="line"></span><br><span class="line">##### 目标</span><br><span class="line"></span><br><span class="line">我们在学习时所感兴趣的问题看起来像下面这样：</span><br><span class="line"></span><br><span class="line">1.	我们为一个已知电路提供一些具体的输入（例如 `</span>x = <span class="number">-2</span><span class="string">`，`</span>y = <span class="number">3</span><span class="string">`）</span><br><span class="line">2.	电路计算出一个输出值（例如 `</span><span class="number">-6</span><span class="string">`）</span><br><span class="line">3.	那么问题的核心变为：我们如何轻微的改变输入以便增加输出？</span><br><span class="line"></span><br><span class="line">在这个例子中，我们应该向什么方向改变`</span>x,y<span class="string">`以便得到一个比`</span><span class="number">-6</span><span class="string">`更大的数字呢？注意到，例如`</span>x = <span class="number">-1.99</span><span class="string">`以及`</span>y = <span class="number">2.99</span><span class="string">`时`</span>x * y = <span class="number">-5.95</span><span class="string">` 这是一个比`</span><span class="number">-6.0</span><span class="string">`更大的数。别被它搞晕了：`</span><span class="number">-5.95</span><span class="string">`是比`</span><span class="number">-6.0</span><span class="string">`更大的。这个增量为`</span><span class="number">0.05</span><span class="string">`，尽管`</span><span class="number">-5.95</span><span class="string">`的大小（到0的距离）更小一些。</span><br><span class="line"></span><br><span class="line">##### 策略#1：本地随机搜索</span><br><span class="line"></span><br><span class="line">好，等一下，现在我们有一个电路，我们有一些输入并且我们希望轻微地改变它们以便增加输出？为什么这个很难？我们可以简单的“转发”电路来计算对于任何给定的`</span>x<span class="string">`和`</span>y<span class="string">`的输出，所以这不是很简单吗？我们为什么不随机调整`</span>x<span class="string">`和`</span>y<span class="string">`来跟踪效果最好的策略呢：</span><br><span class="line">`</span><span class="string">``</span>js</span><br><span class="line"><span class="comment">// circuit with single gate for now</span></span><br><span class="line"><span class="keyword">var</span> forwardMultiplyGate = <span class="function"><span class="keyword">function</span>(<span class="params">x, y</span>) </span>&#123; <span class="keyword">return</span> x * y; &#125;;</span><br><span class="line"><span class="keyword">var</span> x = <span class="number">-2</span>, y = <span class="number">3</span>; <span class="comment">// some input values</span></span><br><span class="line">	</span><br><span class="line"><span class="comment">// try changing x,y randomly small amounts and keep track of what works best</span></span><br><span class="line"><span class="keyword">var</span> tweak_amount = <span class="number">0.01</span>;</span><br><span class="line"><span class="keyword">var</span> best_out = -<span class="literal">Infinity</span>;</span><br><span class="line"><span class="keyword">var</span> best_x = x, best_y = y;</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">var</span> k = <span class="number">0</span>; k &lt; <span class="number">100</span>; k++) &#123;</span><br><span class="line">  <span class="keyword">var</span> x_try = x + tweak_amount * (<span class="built_in">Math</span>.random() * <span class="number">2</span> - <span class="number">1</span>); <span class="comment">// tweak x a bit</span></span><br><span class="line">  <span class="keyword">var</span> y_try = y + tweak_amount * (<span class="built_in">Math</span>.random() * <span class="number">2</span> - <span class="number">1</span>); <span class="comment">// tweak y a bit</span></span><br><span class="line">  <span class="keyword">var</span> out = forwardMultiplyGate(x_try, y_try);</span><br><span class="line">  <span class="keyword">if</span>(out &gt; best_out) &#123;</span><br><span class="line">    <span class="comment">// best improvement yet! Keep track of the x and y</span></span><br><span class="line">    best_out = out; </span><br><span class="line">    best_x = x_try, best_y = y_try;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>当我执行它时，我的到了<code>best_x = -1.9928</code>，<code>best_y = 2.9901</code>，以及<code>best_out = -5.9588</code>。因为<code>-5.9588</code>比<code>-6.0</code>更大，所以我们就搞定了，是吗？并不是这样：如果你能负担得起时间的话，它对于仅包含几个门的微小的问题来说是一个完美的策略。但是对于接受上百万输入的大量的电路来说，并非如此。结果是，我们可以做的更好。</p>
+<h5 id="策略-2：数值梯度"><a href="#策略-2：数值梯度" class="headerlink" title="策略#2：数值梯度"></a>策略#2：数值梯度</h5><p>这里就有一个更好的方法。再次记住，在我们前期我们被提供了一个电路（例如，我们的电路是一个单一的<code>*</code>门）和一些特殊的输入（例如<code>x = -2, y = 3</code>）。门会计算出结果(<code>-6</code>)，而现在我们希望对<code>x</code>和<code>y</code>进行微调以便得到更高的输出。</p>
+<p>对于我们接下来要做的事情，一个很棒的直觉是这样：想象一下获取来自于门电路的输出值输出值，并且对其正向加压。正向电压会反过来通过们进行传输并且引起对输入<code>x</code>和<code>y</code>的推动。这个推动就告诉了我们应该如何改变<code>x</code>和<code>y</code>以便增加输出值。</p>
+<p>在我们这个特定的例子中，这个推动力可能是什么样子的呢？考虑一下，我们可以凭直觉知道施加在<code>x</code>上的力应该是正向的，因为使<code>x</code>轻微地增大会增加电路的输出。例如，将<code>x</code>从<code>x = -2</code>增加到<code>x = -1</code>会使我们得到<code>-3</code> - 远大于<code>-6</code>。在另一方面，我们会希望在<code>y</code>上施加负向的力，而使它变得更小(因为更小的<code>y</code>，例如从<code>y = 3</code>降到<code>y = 2</code>会使我们的结果更高：<code>2 * -2 = -4</code>，同样比<code>-6</code>更大)。但这毕竟是我们脑中的直觉。随着我们的深入，我们会了解到，我这里提到的牵引力实际上是基于输入值(<code>x</code>和<code>y</code>)的<strong>导数</strong>输出值。你可以已经听说过这些：</p>
+<pre><code>导数可以被认为是一种施加于各个输入值的力，用于使输出变得更高。
+</code></pre><p>所以我们如何来精确地评价这个牵引力（导数）呢？实际上有一个非常简单的方法。我们反向地来操作：不同于增加电路的输出值，我们一个接一个地迭代每个输入值，轻微地增加它并检测输出值如何改变。输出的改变就是导数。尽管我们到现在为止还是凭借直觉。我们还是看一下数学定义。我们可以写出函数关于某个输入的导数，例如对<code>x</code>的导数可以写成：</p>
+<div><br><span class="MathJax_Preview"></span><div class="MathJax_Display" role="textbox" aria-readonly="true" style="text-align: center;"><span class="MathJax" id="MathJax-Element-2-Frame"><nobr><span class="math" id="MathJax-Span-12" style="width: 15.419em; display: inline-block;"><span style="display: inline-block; position: relative; width: 12.815em; height: 0px; font-size: 120%;"><span style="position: absolute; clip: rect(0.992em 1000.003em 3.336em -0.466em); top: -2.497em; left: 0.003em;"><span class="mrow" id="MathJax-Span-13"><span class="mfrac" id="MathJax-Span-14"><span style="display: inline-block; position: relative; width: 3.076em; height: 0px; margin-right: 0.107em; margin-left: 0.107em;"><span style="position: absolute; clip: rect(1.669em 1000.003em 2.867em -0.414em); top: -3.174em; left: 50%; margin-left: -1.456em;"><span class="mrow" id="MathJax-Span-15"><span class="mi" id="MathJax-Span-16" style="font-family: STIXGeneral-Regular;">∂</span><span class="mi" id="MathJax-Span-17" style="font-family: STIXGeneral-Italic;">f<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.159em;"></span></span><span class="mo" id="MathJax-Span-18" style="font-family: STIXGeneral-Regular;">(</span><span class="mi" id="MathJax-Span-19" style="font-family: STIXGeneral-Italic;">x<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.003em;"></span></span><span class="mo" id="MathJax-Span-20" style="font-family: STIXGeneral-Regular;">,</span><span class="mi" id="MathJax-Span-21" style="font-family: STIXGeneral-Italic; padding-left: 0.211em;">y</span><span class="mo" id="MathJax-Span-22" style="font-family: STIXGeneral-Regular;">)</span></span><span style="display: inline-block; width: 0px; height: 2.503em;"></span></span><span style="position: absolute; clip: rect(1.669em 1000.003em 2.659em -0.414em); top: -1.82em; left: 50%; margin-left: -0.466em;"><span class="mrow" id="MathJax-Span-23"><span class="mi" id="MathJax-Span-24" style="font-family: STIXGeneral-Regular;">∂</span><span class="mi" id="MathJax-Span-25" style="font-family: STIXGeneral-Italic;">x<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.003em;"></span></span></span><span style="display: inline-block; width: 0px; height: 2.503em;"></span></span><span style="position: absolute; clip: rect(0.836em 1000.003em 1.201em -0.466em); top: -1.247em; left: 0.003em;"><span style="border-left-width: 3.076em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.25px; vertical-align: 0.003em;"></span><span style="display: inline-block; width: 0px; height: 1.044em;"></span></span></span></span><span class="mo" id="MathJax-Span-26" style="font-family: STIXGeneral-Regular; padding-left: 0.315em;">=</span><span class="mfrac" id="MathJax-Span-27" style="padding-left: 0.315em;"><span style="display: inline-block; position: relative; width: 7.971em; height: 0px; margin-right: 0.107em; margin-left: 0.107em;"><span style="position: absolute; clip: rect(1.669em 1000.003em 2.867em -0.622em); top: -3.174em; left: 50%; margin-left: -3.904em;"><span class="mrow" id="MathJax-Span-28"><span class="mi" id="MathJax-Span-29" style="font-family: STIXGeneral-Italic;">f<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.159em;"></span></span><span class="mo" id="MathJax-Span-30" style="font-family: STIXGeneral-Regular;">(</span><span class="mi" id="MathJax-Span-31" style="font-family: STIXGeneral-Italic;">x<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.003em;"></span></span><span class="mo" id="MathJax-Span-32" style="font-family: STIXGeneral-Regular; padding-left: 0.263em;">+</span><span class="mi" id="MathJax-Span-33" style="font-family: STIXGeneral-Italic; padding-left: 0.263em;">h</span><span class="mo" id="MathJax-Span-34" style="font-family: STIXGeneral-Regular;">,</span><span class="mi" id="MathJax-Span-35" style="font-family: STIXGeneral-Italic; padding-left: 0.211em;">y</span><span class="mo" id="MathJax-Span-36" style="font-family: STIXGeneral-Regular;">)</span><span class="mo" id="MathJax-Span-37" style="font-family: STIXGeneral-Regular; padding-left: 0.263em;">−</span><span class="mi" id="MathJax-Span-38" style="font-family: STIXGeneral-Italic; padding-left: 0.263em;">f<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.159em;"></span></span><span class="mo" id="MathJax-Span-39" style="font-family: STIXGeneral-Regular;">(</span><span class="mi" id="MathJax-Span-40" style="font-family: STIXGeneral-Italic;">x<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.003em;"></span></span><span class="mo" id="MathJax-Span-41" style="font-family: STIXGeneral-Regular;">,</span><span class="mi" id="MathJax-Span-42" style="font-family: STIXGeneral-Italic; padding-left: 0.211em;">y</span><span class="mo" id="MathJax-Span-43" style="font-family: STIXGeneral-Regular;">)</span></span><span style="display: inline-block; width: 0px; height: 2.503em;"></span></span><span style="position: absolute; clip: rect(1.669em 1000.003em 2.659em -0.466em); top: -1.82em; left: 50%; margin-left: -0.258em;"><span class="mi" id="MathJax-Span-44" style="font-family: STIXGeneral-Italic;">h</span><span style="display: inline-block; width: 0px; height: 2.503em;"></span></span><span style="position: absolute; clip: rect(0.836em 1000.003em 1.201em -0.466em); top: -1.247em; left: 0.003em;"><span style="border-left-width: 7.971em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.25px; vertical-align: 0.003em;"></span><span style="display: inline-block; width: 0px; height: 1.044em;"></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 2.503em;"></span></span></span><span style="border-left-width: 0.003em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 2.566em; vertical-align: -0.872em;"></span></span></nobr></span></div><script type="math/tex; mode=display" id="MathJax-Element-2"><br>\frac{\partial f(x,y)}{\partial x} = \frac{f(x+h,y) - f(x,y)}{h}<br></script><br></div>
+
+<p>在这里，h是非常小的，这是你改变的总量。并且，如果你不太熟悉计算的话，必须要注意的是，在等式的左边，横线<strong>并不</strong>表示除法。这个符号∂f(x,y)/∂x是一个整体：函数 f(x,y) 对x的编导。等式右边的横线表示除法。我知道这非常让人迷惑，但这是一个标准符号。无论怎样，我希望这并没有太吓人，因为它的确很简单：电路被赋予一些f(x,y)的初始值，然后我们将其中的一个输入改变一个非常小的量h，并且获取新的输出f(x+h,y)。将二者相减我们能得到改变量，然后除以h我们就得到了对于任意改变量的标准量。从另一方面说，下面的代码这正反应了我上面阐述：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x = <span class="number">-2</span>, y = <span class="number">3</span>;</span><br><span class="line"><span class="keyword">var</span> out = forwardMultiplyGate(x, y); <span class="comment">// -6</span></span><br><span class="line"><span class="keyword">var</span> h = <span class="number">0.0001</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// compute derivative with respect to x</span></span><br><span class="line"><span class="keyword">var</span> xph = x + h; <span class="comment">// -1.9999</span></span><br><span class="line"><span class="keyword">var</span> out2 = forwardMultiplyGate(xph, y); <span class="comment">// -5.9997</span></span><br><span class="line"><span class="keyword">var</span> x_derivative = (out2 - out) / h; <span class="comment">// 3.0</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// compute derivative with respect to y</span></span><br><span class="line"><span class="keyword">var</span> yph = y + h; <span class="comment">// 3.0001</span></span><br><span class="line"><span class="keyword">var</span> out3 = forwardMultiplyGate(x, yph); <span class="comment">// -6.0002</span></span><br><span class="line"><span class="keyword">var</span> y_derivative = (out3 - out) / h; <span class="comment">// -2.0</span></span><br></pre></td></tr></table></figure>
+<p>让我们对<code>x</code>进行研究，我们将输入从<code>x</code>变为<code>x + h</code>，然后电路反馈</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/11/16/Hackers-guide-to-Neural-Networks/" data-id="cirfvhfns000bbknbfvwtf868" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-embracing-async-in-javascript-part-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2014/11/14/embracing-async-in-javascript-part-2/" class="article-date">
+  <time datetime="2014-11-14T19:01:29.000Z" itemprop="datePublished">2014-11-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog-hexo/2014/11/14/embracing-async-in-javascript-part-2/">拥抱JavaScript中的异步2（译）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#拥抱JavaScript中的异步2（译）<br><a href="https://twitter.com/whitehouse3001" target="_blank" rel="external">Andy White</a></p>
+<p>##本系列的上一期</p>
+<ul>
+<li><a href="http://io.pellucid.com/blog/embracing-async-in-javascript-part-1" target="_blank" rel="external">拥抱JavaScript中的异步1</a> </li>
+<li>译文：<a href="http://nnabuuu.github.io/blog-hexo/2014/10/07/embracing-async-in-javascript-part-1/">http://nnabuuu.github.io/blog-hexo/2014/10/07/embracing-async-in-javascript-part-1/</a></li>
+</ul>
+<p>##简介</p>
+<p>在之前的文章中（第一部分），我简要的讨论了一些JavaScript事件循环的基础，函数调用栈，闭包，以及一些基本的回调模式，这些内容都与异步编程相关。在本文中，我想要继续讨论更多JavaScript异步的异步话题。</p>
+<p>首先，我想要回应<a href="http://www.reddit.com/r/javascript/comments/2hzu7c/embracing_async_in_javascript_part_1/ckxjauu" target="_blank" rel="external">来自Redditor的对我之前一篇文章的评论</a>，该评论拒绝“整个应用应该被构建成为一个异步运行的系统”的思想。这个评论很棒，并且我的确赞同。在我前面的文章中，我并没有在暗示你必须在普通的回调或者其他低级语言特性上构建整个应用来处理你代码中的异步API。但即使你不这样做你也会很快的在其他地方遇到异步代码，而你需要理解并且拥抱其工作方式，这样才能更好的在JavaScript上取得成功。如何拥抱异步代码完全取决于你（以及你的目标平台的支持），有非常多的资源，库，或其他内容可以来帮助你。编写异步代码比起编写同步代码需要更小心以及更多的语言/库的支持，一旦你开始在你的代码中引入异步模式，其异步性往往会不断扩张并且需要越来越多的代码以便维护其一致性以及正确的行为。JavaScript在其核心中并没有对异步代码有太多语言层面的支持，而这个现状正在由新的语言特性改善，例如<a href="http://www.html5rocks.com/en/tutorials/es6/promises/" target="_blank" rel="external">原生的promise</a>，<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*" target="_blank" rel="external">ES6生成器</a>，<a href="https://github.com/laverdet/node-fibers" target="_blank" rel="external">Node.js中的libers</a>或类似的库，还有数以百计的已有的异步模块以及库在类似于<a href="https://www.npmjs.org/search?q=async" target="_blank" rel="external">npm</a>的仓库中。</p>
+<p>但是，在本文中，我仍然想要定位于低层次，并且谈谈更加底层的JavaScript中的异步代码模式：events和promises。</p>
+<p>##Events</p>
+<p>在JavaScript中的事件是一种用来在JavaScript的对象之间进行通信的公用订阅机制。事件和回调非常相似：事件的发布者为感兴趣的对象提供一种订阅方式用来在事件发生时接收通知。订阅一个事件代表注册一个回调函数，当事件发生时回调它。当事件发生时，事件发布者简单的调用其注册的任何回调函数。和回调一样，事件可以同步或异步地发生，事件监听回调也可以被同步或异步地调用。</p>
+<p>JavaScript原生地将事件用在例如DOM事件的场合，例如点击、鼠标移动、表格提交，等等。即使在非浏览器环境下的JavScript中，事件也被广泛地使用：例如Node.js的EventEmitter。在Node.js中，事件也在stream中出现。</p>
+<p>使用事件的主要好处在于他们可以被多个监听器所消费。当事件发生时，事件的发布者可以调用多个被注册的回调函数，因此多个对象可以被通知到。它也可以在某块之间创造松耦合，因为发布者不应该关心“什么”或者“多少”消费者订阅了自己，并且消费者不需要知道发布者内部在做些什么。</p>
+<p>大多数的JavaScript框架（浏览器端或非浏览器端）都支持一些事件方式，包括jQuery、AngularJS、Backbone、React、Ember，以及之前提到的Node.js，包含各种各样的<code>EventEmitter</code>以及<code>stream</code>。</p>
+<p>下面是一个简单的使用基于事件的API的示例。这个例子是用Node.js实现的，使用基本的EventEmitter模块。</p>
+<pre><code>// Get the constructor function for the Node.js EventEmitter
+var EventEmitter = require(&quot;events&quot;).EventEmitter;
+
+// Clock is our event publisher - when started, it will publish a &quot;tick&quot; event 
+// every second.
+function Clock() {
+    this.emitter = new EventEmitter();
+}
+
+// Starts the clock ticking
+Clock.prototype.start = function() {
+    var self = this;
+    this.interval = setInterval(function() {
+        self.emitter.emit(&quot;tick&quot;, new Date());
+    }, 1000);
+};
+
+// Stops the clock from ticking
+Clock.prototype.stop = function() {
+    if (this.interval) {
+        clearInterval(this.interval);
+        this.interval = null;
+    }
+};
+
+// Register a callback for the &quot;tick&quot; event
+Clock.prototype.onTick = function(callback) {
+    this.emitter.on(&quot;tick&quot;, callback);
+};
+
+// Create our clock
+var clock = new Clock();
+
+// Register an event for the clock&apos;s tick event
+clock.onTick(function(date) {
+    console.log(date);
+});
+
+// Start the clock
+clock.start();
+</code></pre><p>这个基础的Node.js程序输出类似如下：</p>
+<pre><code>% node clock.js
+Wed Oct 15 2014 14:08:01 GMT-0600 (MDT)
+Wed Oct 15 2014 14:08:03 GMT-0600 (MDT)
+Wed Oct 15 2014 14:08:04 GMT-0600 (MDT)
+Wed Oct 15 2014 14:08:05 GMT-0600 (MDT)
+Wed Oct 15 2014 14:08:06 GMT-0600 (MDT)
+Wed Oct 15 2014 14:08:07 GMT-0600 (MDT)
+Wed Oct 15 2014 14:08:08 GMT-0600 (MDT)
+...repeats forever...
+</code></pre><p>这里，Clock的<code>onTick</code>函数允许任意数量的对象注册回调到每一次的时间点上。在示例中，我们只注册了一个订阅者，而实际上我们可以注册更多。</p>
+<p>事件是一种又用的同步或异步通信机制，但是他们本身并不有助于解决异步调用的顺寻问题，你可以使用其他的技术来帮助你，例如回调。</p>
+<h2 id="Promises"><a href="#Promises" class="headerlink" title="Promises"></a>Promises</h2><p>Promise是另外一种处理JavaScript对象间异步通信的机制。在过去几年中，Promise已经在JavaScript中变得非常流行了，并且现在已经有许多Promise的实现可供挑选，包括即将到来的ECMAScript6的原生Promise实现。</p>
+<p>当异步任务完成或失败时通知其他模块方面，Promise与回调十分相似，但是实现的方式与回调以及事件有一些不同。在回调中，一个异步API函数接受一个或多个函数入参，当任务结束或失败时API函数会使用它们，然而一个基于Promise的函数并不接受回调作为参数，而是返回一个其他模块可以注册完成或者失败回调的<code>Promise</code>对象。而且，另一个回调与Promise的巨大不同之处在于，Promise对象会在满足条件之后继续持有返回值或错误对象，因此其他模块可以检验Promise的状态，访问其对象，即使Promise已经完成。使用回调以及事件时，回调的调用者以及事件的发布者都不会持有最后一次的值，因此如果一个感兴趣的模块错过了一个事件，它们可能就无法检测到这个事件已经发生，也无法得知随该事件一起被发出的值是什么了。</p>
+<p>当我们谈到Promise时，我们引入了一个较为具体的术语，也就是<a href="https://promisesaplus.com/" target="_blank" rel="external">Promise/A+规范</a>的描述。当然也有一些其他的Promise规范，但Promise/A+规范似乎是最流行的。网络上有非常多的Promise教学，因此我不会在这里具体讲述，而我的确想提供一个简单的示例来演示Promise是如何被用在顺序的异步函数调用上的。我将使用非常流行的、功能强大的库<a href="https://github.com/kriskowal/q" target="_blank" rel="external">Q</a>来进行演示。</p>
+<p>这是一个非常“刻意”的例子，但它演示了顺序的异步调用如何能和Promise一起使用。</p>
+<pre><code>function begin() {
+    console.log(&quot;begin&quot;);
+    return 0;
+}
+
+function end() {
+    console.log(&quot;end&quot;);
+}
+
+function incrementAsync(i) {
+    var defer = Q.defer();
+
+    setTimeout(function() {
+        i++;
+        console.log(i);
+        defer.resolve(i);
+    }, 0);
+
+    return defer.promise;
+}
+
+Q.fcall(begin)
+    .then(incrementAsync)
+    .then(incrementAsync)
+    .then(incrementAsync)
+    .then(end);
+</code></pre><p>这个例子的输出是：</p>
+<pre><code>begin
+1
+2
+3
+end
+</code></pre><p>这个例子的主要驱动方式是Q promise链，由<code>Q.fcall</code>以begin为参数开始。<code>Q.fcall</code>是一个Q提供的静态方法，用来执行所提供的函数，并返回一个值的Promise。入参函数可以返回一个Promise值也可以返回一个非Promise值，但无论哪种方式，Q将会从<code>Q.fcall</code>返回一个Promise。由于<code>Q.fcall</code>总是返回一个Promise，你可以使用<code>then</code>方法在一个Promise上链接其他函数，<code>then</code>函数是Promise的基础方法。返回一个Promise的函数通常被成为”thenable”的函数，意味着你可以使用<code>.then()</code>在它之上链接回调函数。</p>
+<p>上面的第一个<code>.then</code>将<code>incrementAsync</code>函数链接到由<code>Q.fcall(begin)</code>创造的Promise中。<code>incrementAsync</code>函数接受一个数字类型的参数，设置一个超时机制来异步地增加值，然后返回一个增加完结果的值的Promise。<code>incrementAsync</code>函数创造了一个Q的<code>deferred</code>对象（使用<code>Q.defer()</code>），这个对象是Promise的“创造者”进行操作的。Promise的创造者有义务在某一个时间点满足或者拒绝这个Promise，典型的时间点就是异步调用成功或者失败的时刻。在Q里，它是通过在deferred对象上调用<code>.resolve()</code>或<code>reject()</code>实现的。在<code>incrementAsync</code>中，Promise是通过增加i来满足的，然后调用了<code>.resolve(i)</code>，也就表示这个Promise被满足了，并且提供了一个值来传递到链接的下一个函数中。传递给<code>.resolve()</code>的值被传递到链接的下一个函数中作为函数的第一个参数。在Q的Promise链中，每一个方法都可以为一个值的Promise或者朴素的值，Q会基于成功满足或拒绝的条件顺序执行执行该链。Promise不需要被一个值满足，它可以不使用任何值，仅仅表示异步调用已经成功，没有任何值来提供。</p>
+<p>Promise/A+规范要求Promise总是被异步地处理，因此上面例子中的<code>setTimeout</code>实际上是多余的，我们用它只是原来强调<code>incrementAsync</code>是天然异步的。</p>
+<p>Promise是有一点复杂的话题，很难在一篇文章中讲清楚，但有数不胜数的资源用以将来的学习。</p>
+<h2 id="未来"><a href="#未来" class="headerlink" title="未来"></a>未来</h2><p>JavaScript作为一种语言以及生态系统，正在迅速地发展。只有非常多激动人心的语言特性正被开发出来支持异步代码。其中最令人激动的是<a href="http://davidwalsh.name/es6-generators" target="_blank" rel="external">ES6 generator</a>，它是一种非常的强大的、JavaScript编程的新方式。我在此不会讲述这个话题，但网络上有非常多好的教程和指南。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>异步编程是JavaScript中需要理解的重要内容，并且有非常多的方式来拥抱它。对于如何处理异步代码并没有一种定论，但是理解不同的可选项是非常重要的，这样你就可以根据你的需求选取正确的解决方案。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/11/14/embracing-async-in-javascript-part-2/" data-id="cirfvhfo6000obknbajv5uhyl" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Solving-Coding-Challenges-with-Streams" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2014/10/22/Solving-Coding-Challenges-with-Streams/" class="article-date">
+  <time datetime="2014-10-23T06:32:11.000Z" itemprop="datePublished">2014-10-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog-hexo/2014/10/22/Solving-Coding-Challenges-with-Streams/">用Stream解决编程挑战（译）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#用Stream解决编程挑战（译）</p>
+<p>我第一次使用Node.js解决编程挑战的经验简直是让人焦虑不已。我设计了一个切实可行的解决方法，但我却无法找到一个有效的方法来解析输入。它的格式非常的简单：文本通过stdin的pipe输入。很简单，是吧？但我一般的时间都耗费在这个小小的细节上，最终我得到了一个非常脆弱的、缝缝补补的、处处hack过的代码，这至今仍然让我感到不寒而栗。</p>
+<p>这份经验激励着我找到一种管用的方式来完成编程挑战。在解决了更多问题之后我终于找到了一种我希望大家都能觉得又用的方式。</p>
+<p>##模式</p>
+<p>主要的思想是：创造一个problem的stream，将每一个problem转化为一个solition。这个流程由4个步骤组成：</p>
+<ol>
+<li>将输入打散为行的stream。</li>
+<li>将这些行转化为和问题相关的数据结构</li>
+<li>解决问题</li>
+<li>格式化solution并输出</li>
+</ol>
+<p>对于那些熟悉stream的人来说，这个模式看起来像这样：</p>
+<pre><code>var split = require(&quot;split&quot;); // dominictarr’s helpful line-splitting module
+
+process.stdin
+    .pipe(split()) // split input into lines
+    .pipe(new ProblemStream()) // transform lines into problem data structures
+    .pipe(new SolutionStream()) // solve each problem
+    .pipe(new FormatStream()) // format the solutions for output
+    .pipe(process.stdout); // write solution to stdout
+</code></pre><p>##我们的问题</p>
+<p>为了让这个教程更接地气一点，让我们来解决一个<a href="https://code.google.com/codejam/contest/2929486/dashboard" target="_blank" rel="external">Google Code Jam challenge</a>。这个问题是让我们验证数独游戏的解答。输入看起来像这样：</p>
+<pre><code>2                  // number of puzzles to verify
+3                  // dimensions of first puzzle (3 * 3 = 9)
+7 6 5 1 9 8 4 3 2  // first puzzle
+8 1 9 2 4 3 5 7 6
+3 2 4 6 5 7 9 8 1
+1 9 8 4 3 2 7 6 5
+2 4 3 5 7 6 8 1 9
+6 5 7 9 8 1 3 2 4
+4 3 2 7 6 5 1 9 8
+5 7 6 8 1 9 2 4 3
+9 8 1 3 2 4 6 5 7
+3                  // dimensions of second puzzle
+7 9 5 1 3 8 4 6 2  // second puzzle
+2 1 3 5 4 6 8 7 9
+6 8 4 9 2 7 4 5 1
+1 3 8 4 6 2 7 9 5
+5 4 6 8 7 9 2 1 3
+9 2 7 3 5 1 6 8 4
+4 6 2 7 9 5 1 3 8
+8 7 9 2 1 3 5 4 6
+3 5 1 6 8 4 9 2 7
+</code></pre><p>我们输出的格式应该是：</p>
+<pre><code>Case #1: Yes
+Case #2: No
+</code></pre><p>其中“Yes”表明解答是正确的。</p>
+<p>让我们开始吧。</p>
+<p>##建立</p>
+<p>我们的第一步就是要从stdin中提取输入。在Node中，stdin是一个可读的stream。基本上，一个可读stream会在数据可读后立刻发送数据（更多的解释，参见<a href="http://nodejs.org/api/stream.html#stream_class_stream_readable" target="_blank" rel="external">readable stream docs</a>）。下面这行代码会输出所有输入到stdin中的内容：</p>
+<pre><code>process.stdin.pipe(process.stdout);
+</code></pre><p><code>pipe</code>方法从可读stream中获取所有的数据并写入一个可写stream。</p>
+<p>可能从这份代码中并不显而易见，但是<code>process.stdin</code>会以大块byte的形式pipe数据，而我们感兴趣的是以行为分隔的文本。为了将这种大块数据分解成行，我们可以将<code>process.stdin</code> pipe进入dominictarr所写的<code>split</code>模块中。首先<code>npm install split</code>，然后：</p>
+<pre><code>var split = require(&quot;split&quot;);
+
+process.stdin.setEncoding(&quot;utf8&quot;); // convert bytes to utf8 characters
+
+process.stdin
+     .pipe(split())
+     .pipe(process.stdout);
+</code></pre><p>##使用transform stream构造问题</p>
+<p>现在我们有了由行组成的序列，我们可以开始进行我们真正的工作了。我们会将这些行转化为一串代表数独问题的二维数组中。然后，我们pipe每个数独问题到另一个流并用它来检验它是否是一个正确的解答。</p>
+<p>Node的原生transform stream提供了我们所需要的抽象。一个transform stream将写入它的数据进行转化，并将结果以一个可读stream的方式输出。有点疑惑？我们下面会让你清楚一些。</p>
+<p>为了创建一个transform stream，我们要继承stream.Transform并调用它的构造函数。</p>
+<pre><code>var Transform = require(&quot;stream&quot;).Transform;
+var util = require(&quot;util&quot;);
+
+util.inherits(ProblemStream, Transform); // inherit Transform
+
+function ProblemStream () {
+    Transform.call(this, { &quot;objectMode&quot;: true }); // invoke Transform&apos;s constructor
+}
+</code></pre><p>你会注意到，我们传递了<code>objectMode</code>的flag到<code>Transform</code>的构造函数中。原始的Stream上只接受string和buffer。而我们希望输出一个二维数组，所以我们需要打开object模式。</p>
+<p>Transform stream有两个重要的方法：<code>_transform</code>和<code>_flush</code>。<code>_transform</code>在每当有数据写入stream时被调用。我们使用这个方法来将一系列的行转化为一个数组解答。<code>_flush</code>将在transform stream被通知没有更多的数据会被写入时被调用。这个函数有助于我们结束任何尚未结束的任务。</p>
+<p>让我们草拟我们的transform函数：</p>
+<pre><code>ProblemStream.prototype._transform = function (line, encoding, processed) {
+     // TODO
+}
+</code></pre><p><code>_transform</code>接受3个参数。第一个是写入stream的数据。在我们这个情况下，就是一行文本。第二个参数是stream编码，在此我们设为utf8。最后一个参数是一个无参的回调函数用来提供已经结束输入处理的信号。</p>
+<p>当你在实现<code>_transform</code>函数的时候要牢记两点：</p>
+<ol>
+<li>调用<code>processed</code>回调函数并不向output stream中添加任何内容。它仅仅是一个信号，标志着我们已经完成了传递给<code>_transform</code>的内容的处理</li>
+<li>如果要输出一个值，使用<code>this.push(value)</code></li>
+</ol>
+<p>记住这些，让我们再来看看输入。</p>
+<pre><code>2
+3
+7 6 5 1 9 8 4 3 2
+8 1 9 2 4 3 5 7 6
+3 2 4 6 5 7 9 8 1
+1 9 8 4 3 2 7 6 5
+2 4 3 5 7 6 8 1 9
+6 5 7 9 8 1 3 2 4
+4 3 2 7 6 5 1 9 8
+5 7 6 8 1 9 2 4 3
+9 8 1 3 2 4 6 5 7
+3
+7 9 5 1 3 8 4 6 2
+2 1 3 5 4 6 8 7 9
+6 8 4 9 2 7 4 5 1
+1 3 8 4 6 2 7 9 5
+5 4 6 8 7 9 2 1 3
+9 2 7 3 5 1 6 8 4
+4 6 2 7 9 5 1 3 8
+8 7 9 2 1 3 5 4 6
+3 5 1 6 8 4 9 2 7
+</code></pre><p>我们马上就遇到了一个问题：我们的<code>_transform</code>方法每行被调用一次，但是前面三行每一行都代表不同的意义。第一行描述了要解决多少个问题，第二行是接下来的解答由几行组成，第三行是解答内容。我们的stream需要用不同的方式处理每一行。</p>
+<p>幸运的是，我们可以将状态保存在transform stream内部：</p>
+<pre><code>var Transform = require(&quot;stream&quot;).Transform;
+var util = require(&quot;util&quot;);
+
+util.inherits(ProblemStream, Transform);
+
+function ProblemStream () {
+    Transform.call(this, { &quot;objectMode&quot;: true });
+
+    this.numProblemsToSolve = null;
+    this.puzzleSize = null;
+    this.currentPuzzle = null;
+}
+</code></pre><p>通过这些变量，我们就可以追踪到我们正处在行序列的何处。</p>
+<pre><code>ProblemStream.prototype._transform = function (line, encoding, processed) {
+    if (this.numProblemsToSolve === null) { // handle first line
+        this.numProblemsToSolve = +line;
+    }
+    else if (this.puzzleSize === null) { // start a new puzzle
+        this.puzzleSize = (+line) * (+line); // a size of 3 means the puzzle will be 9 lines long
+        this.currentPuzzle = [];
+    }
+    else {
+        var numbers = line.match(/\d+/g); // break line into an array of numbers
+        this.currentPuzzle.push(numbers); // add a new row to the puzzle
+        this.puzzleSize--; // decrement number of remaining lines to parse for puzzle
+
+        if (this.puzzleSize === 0) {
+            this.push(this.currentPuzzle); // we&apos;ve parsed the full puzzle; add it to the output stream
+            this.puzzleSize = null; // reset; ready for next puzzle
+        }
+    }
+    processed(); // we&apos;re done processing the current line
+};
+
+process.stdin
+    .pipe(split())
+    .pipe(new ProblemStream())
+    .pipe(new SolutionStream()) // TODO
+    .pipe(new FormatStream()) // TODO
+    .pipe(process.stdout); 
+</code></pre><p>让我们花点时间来回顾一下代码。记住<code>_transform</code>会为每行所调用。第一行_transform接收到对应的需要解决问题的数目。由于<code>numProblemsToSolve</code>是null，所以这个逻辑分支会被执行。被传递到<code>_transform</code>的第二行是解答的尺寸。由于我们已经知道解答的尺寸，第三行是构造数据结构的开始。一旦解答被构造，我们会将一个完整的解答推送到transform stream的输出端，然后准备创建一个新的解答。循环此过程直到我们读完所有行。</p>
+<p>##解决所有的问题吧！</p>
+<p>解析完并构造出数独解答的数据结构之后，我们终于可以开始解答这个问题了。</p>
+<p>“解答问题”的任务，可以被解释为“将一个问题转化为一个解答”。这就是我们的下一个stream所要做的。</p>
+<pre><code>util.inherits(SolutionStream, Transform);
+
+function SolutionStream () {
+    Transform.call(this, { &quot;objectMode&quot;: true });
+}
+</code></pre><p>然后，我们定义一个<code>_transform</code>方法，它接受一个problem参数，并返回一个布尔值。</p>
+<pre><code>SolutionStream.prototype._transform = function (problem, encoding, processed) {
+    var solution = solve(problem);
+    this.push(solution);
+    processed();
+
+    function solve (problem) {
+        // TODO
+        return false;
+    }
+};
+
+process.stdin
+    .pipe(split())
+    .pipe(new ProblemStream())
+    .pipe(new SolutionStream())
+    .pipe(new FormatStream()) // TODO
+    .pipe(process.stdout);
+</code></pre><p>不像<code>ProblemStream</code>一样，这个stream会为每一个输入构造一个输出，<code>_transform</code>会为每个问题执行一次，我们需要解决所有的问题。</p>
+<p>我们所有要做的就是写一个函数来决定是否数独问题被解决了，我把这个留给你自己来解答。</p>
+<h2 id="修饰输出"><a href="#修饰输出" class="headerlink" title="修饰输出"></a>修饰输出</h2><p>现在我们解决了这个问题，我们的最后一步是格式化输出。如你所料，我们又将使用一个transform stream。</p>
+<p>我们的<code>FormatStream</code>接受一个解答并转化为一个字符串传递到<code>process.stdout</code>中。</p>
+<p>还记得输出格式吗？</p>
+<pre><code>Case #1: Yes
+Case #2: No
+</code></pre><p>我们需要纪录问题号，并将布尔值转化为”Yes”或者”No”。</p>
+<pre><code>util.inherits(FormatStream, Transform);
+function FormatStream () {
+    Transform.call(this, { &quot;objectMode&quot;: true });
+
+    this.caseNumber = 0;
+}
+
+FormatStream.prototype._transform = function (solution, encoding, processed) {
+    this.caseNumber++;
+
+    var result = solution ? &quot;Yes&quot; : &quot;No&quot;;
+
+    var formatted = &quot;Case #&quot; + this.caseNumber + &quot;: &quot; + result + &quot;\n&quot;;
+
+    this.push(formatted);
+    processed();
+};
+</code></pre><p>现在，将<code>FormatStream</code>连接到我们的pipeline中，我们就完成了</p>
+<pre><code>process.stdin
+    .pipe(split())
+    .pipe(new ProblemStream())
+    .pipe(new SolutionStream())
+    .pipe(new FormatStream())
+    .pipe(process.stdout);
+</code></pre><p><a href="https://github.com/nimbus154/node-coding-challenge-pattern" target="_blank" rel="external">从Github上获取完整代码。</a></p>
+<h2 id="最后一条提示"><a href="#最后一条提示" class="headerlink" title="最后一条提示"></a>最后一条提示</h2><p>使用<code>pipe</code>的最大好处是你可以在任何可读/可写流中重用你的代码。如果你需要解答一个来自网络的问题，将<code>process.stdin</code>和<code>process.stdout</code>改为网络stream，所有的一切应该可以直接使用。</p>
+<p>对于每一个问题你可以需要做相应的微调，但我希望它给出了一个好的开始。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/10/22/Solving-Coding-Challenges-with-Streams/" data-id="cirfvhfo2000kbknb7rq1oe0r" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-embracing-async-in-javascript-part-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2014/10/07/embracing-async-in-javascript-part-1/" class="article-date">
+  <time datetime="2014-10-08T03:47:48.000Z" itemprop="datePublished">2014-10-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog-hexo/2014/10/07/embracing-async-in-javascript-part-1/">拥抱JavaScript中的异步（译）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#拥抱JavaScript中的异步（译）</p>
+<p><a href="https://twitter.com/whitehouse3001" target="_blank" rel="external">Andy White</a></p>
+<p>##简介</p>
+<p>如果你已经写过不计其数的Javascript代码，那么你会意识到，异步编程并不仅仅是一种”nice to have”的能力，而是一种必需品。为了充分利用语言与生态系统，它必须被理解和接受。</p>
+<p>##回调</p>
+<p>在JavaScript中，最简单的展示异步API的方式之一便是使用一个接受另一个函数作为参数的函数。这些函数参数就是所谓的“回调”或“回调函数”，因为他们给予主函数一个用来回调的钩子 – 通过在恰当的时机，调用一次或多次你所提供的函数。因为JavaScript将函数视为<a href="http://en.wikipedia.org/wiki/First-class_citizen" target="_blank" rel="external">一等公民</a>，你可以将函数实例作为参数传递给其他函数，或者从其他函数中返回函数实例，就像你可以轻松的传递或返回数值，字符串，布尔类型，对象或者数组一样。会点函数可以被主函数在任何时机，以任何的次数，同步或异步的方式，使用任何绑定的上下文以及参数所调用，这样就提供了一种非常灵活以及强大的在JavaScript模块之间进行通信的机制。</p>
+<h2 id="JavaScript的事件循环与回调"><a href="#JavaScript的事件循环与回调" class="headerlink" title="JavaScript的事件循环与回调"></a>JavaScript的事件循环与回调</h2><p>在深入了解回调以及异步代码之前，对JavaScript的事件循环与回调有一个基本的认知是非常重要的。在最基本的形式中，JavaScript是一个单线程的运行时，因此它并不支持类似于多线程、多进程或内部进程通信的技术。尽管看起来（实际也是）有这些限制，缺少多线程实际上会让你作为一个javaScript开发者的认识更简单一些，并且允许几种有趣的在编译、压缩、清理（transpilation）的优化技术。</p>
+<p>因为只有单线程，你将永远不会遇到基本的来自线程的挑战，例如竞争条件，资源冲突，线程死锁等。当JavaScript解释器开始执行一个代码块时（例如，一次函数调用），它将一直执行这块代码直到同步代码结束（该函数中所包含的最后一句同步代码）。在执行这段同步代码的期间，任何非同步的函数调用（例如外部事件句柄调用，异步函数调用，异步回调等等）将简单的被放置于队列中等待运行时事件循环之后执行。一旦同步代码执行完，事件循环将从队列中获取下一块代码并执行它，知道同步代码的结束，以此类推。这样，你可以安全的断言，你在一个函数中编写的任何一串的同步代码，在其他代码执行之前，将总是不被打断地执行到结束。你也无法使用CPU直到你yield它（或者运行时干掉了你的堵塞或者死循环代码）。这对于应用开发非常有帮助，但也需要一些仔细的考虑与计划，尤其是当你需要用到异步API时，你代码的顺序就非常重要了。</p>
+<h2 id="是”下一个tick”还是”事件循环的下一个回合”"><a href="#是”下一个tick”还是”事件循环的下一个回合”" class="headerlink" title="是”下一个tick”还是”事件循环的下一个回合”"></a>是”下一个tick”还是”事件循环的下一个回合”</h2><p>你经常听到JavaScript开发者提到”下一个tick”还是”事件循环的下一个回合”。基本上，这些概念意味着，当当前同步代码执行完毕后，这些代码将被置于等待执行的队列中，时间循环正准备从队列中获取下一块要执行的代码。所有的异步API都暗示代码将会在之后的的”tick”或者“时间循环的回合”被执行。下一个tick的概念可能更具体的取决于你的JavaScript平台，但是基本上，它仅仅指的是一个函数调用已经被置于队列中为了将来执行。在这个条件下，”之后”这个词可能是也可能不是指向一个确定的时间延迟，但它总是表示代码会在当前同步代码执行完之后被执行。</p>
+<h2 id="非堵塞操作"><a href="#非堵塞操作" class="headerlink" title="非堵塞操作"></a>非堵塞操作</h2><p>由于JavaScript的单线程特性，因此时间敏感的操作，例如IO操作，必须全部都是非堵塞且异步的，这样这些操作就不会堵塞主应用的时间循环。当事件循环被堵塞时，没有其他应用逻辑会被执行，应用程序往往陷于完全停止的情景。长时间的操作全部都应该被异步调用，并且在操作结束（或者失败）时使用一些异步完成的回调进行处理。对于长时间的操作，使用进度回调函数也非常常见，这样进度的增长可以被报告出来（例如大文件的拷贝操作时的百分比通知）。所有这些回调都是简单被加入到事件队列中，并且在事件循环的未来某一个回合被执行，这样就不会有任何代码在任何时刻堵塞事件循环。</p>
+<h2 id="同步vs异步回调API"><a href="#同步vs异步回调API" class="headerlink" title="同步vs异步回调API"></a>同步vs异步回调API</h2><p>对于回调，一个重要的方面是，它可以是同步的，也可以是异步的。通常而言，理解回调将被同步还是异步调用是非常重要的，因为你可能会有一些依次执行的代码，它们不应该被执行直到这些回调函数基于的API调用结束。对于同步的回调API，你基本上不需要做任何事情来实现所期望的顺序，因为回调函数将同步地执行到结束，而对于异步回调API，你往往必须用另一种形式编写代码以确保调用顺序的正确性。</p>
+<h2 id="基于同步的”each”函数"><a href="#基于同步的”each”函数" class="headerlink" title="基于同步的”each”函数"></a>基于同步的”each”函数</h2><p>一个基于”each”函数的同步回调可以很好的阐明这个问题。注意：我现在忽略了回调上下文(<code>this</code>)以及<code>Function.prototype.call</code>和<code>apply</code>。</p>
+<pre><code>// Helper function for logging something to the console
+function logItem(item) {
+    console.log(item);
+}
+
+// Synchronous &quot;each&quot; function - invokes the callback for each item
+// in the array
+function each(arr, callback) {
+    for (var i = 0; i &lt; arr.length; ++i) {
+        // Invoke the callback synchronously for each iteration
+        callback(arr[i]);
+    }
+}
+
+// Try it out!
+console.log(&quot;begin&quot;);
+each([1, 2, 3], logItem); // &quot;logItem&quot; is our &quot;callback&quot; function here
+console.log(&quot;end&quot;);
+</code></pre><p>这个示例会在控制台打印：</p>
+<pre><code>begin
+1
+2
+3
+end
+</code></pre><p>除了<code>for</code>循环以及<code>each</code>函数会被同步执行直到到达<code>console.log(&quot;end&quot;)</code>语句，这个示例没有其他特殊的。</p>
+<h2 id="基于异步的”each”函数-（第一次尝试）"><a href="#基于异步的”each”函数-（第一次尝试）" class="headerlink" title="基于异步的”each”函数 （第一次尝试）"></a>基于异步的”each”函数 （第一次尝试）</h2><p>一个异步版本的”each”可能看起来像这样。在这里，我使用setTimeout来强制使回调的执行变得异步。主要setTimeout只是一个帮助函数用来推迟一个函数的调用 – 从当前同步代码执行结束后算起（也就是，下一个事件循环的回合）。setTimeout也接受一个最小时间延迟的参数，但是在这里，我只是使用延迟0毫秒，仅仅让它异步执行，而不产生任何延迟。</p>
+<pre><code>function asyncEach(arr, callback) {
+    for (var i = 0; i &lt; arr.length; ++i) {
+        // Enqueue a function to be called later
+        // Note: this code does not do what we might expect...
+        setTimeout(function() {
+            callback(arr[i]);
+        }, 0);
+    }
+}
+
+console.log(&quot;begin&quot;);
+asyncEach([1, 2, 3], logItem);
+console.log(&quot;end&quot;);
+</code></pre><p>由于回调函数现在异步执行，你应该期待代码执行结果为：</p>
+<pre><code>begin
+end
+1
+2
+3
+</code></pre><p>但是，令人吃惊（或者，其实并不吃惊）的是，代码结果为：</p>
+<pre><code>begin
+end
+undefined
+undefined
+undefined
+</code></pre><p>这个代码错误可能在某一个时刻绊倒过每一个JavaScript开发人员。这里发生了什么？其实，因为我们在循环中使用了<code>setTimeout</code>，而不是在每次循环中调用<code>callback(arr[i])</code>，我们实际上将一个函数调用延迟了，延迟到当前同步代码块的结束（也就是，<code>for</code>循环）。在这个例子中，我们纪录了<code>begin</code>，然后延迟3个回调函数的调用，然后纪录<code>end</code>，然后释放CPU到事件循环中。事件循环又开始执行我们延迟的回调函数，按顺序执行，而我们期望它的结果应该是纪录<code>arr[0]</code>，<code>arr[1]</code>和<code>arr[2]</code>。</p>
+<h2 id="JavaScript的范围和闭包"><a href="#JavaScript的范围和闭包" class="headerlink" title="JavaScript的范围和闭包"></a>JavaScript的范围和闭包</h2><p>为什么结果会是打印三次<code>undefined</code>而不是<code>1</code>,<code>2</code>,<code>3</code>呢？这就涉及到另一个重要的内容，JavaScript函数与范围：<a href="http://en.wikipedia.org/wiki/Closure_(computer_programming" target="_blank" rel="external">闭包</a>)的概念。当你在JavaScript中创建一个函数，这个函数可以访问它被创建的那个范围的所有东西，包括任何你在函数内部创建的新变量。JavaScript不像C,C++,Java,C#那样，没有块级作用域。取而代之的是在函数级别定义作用域。你在函数中定义的任何变量，在函数的其他地方或任何内部函数中都是可以被访问到的。有趣的是，不仅仅一个函数能访问它当前环境作用域的所有变量，函数实例在其整个生命周期同样也“持有”（“关闭”）该作用域，即使其父函数（调用它的函数）已经返回或离开该作用域。只要该函数仍然“存活”（被某些东西引用，还未被回收），那么它就会持有该作用域，即使父函数早已消失。由于函数实例可以从一个函数中被返回，一个函数就可以轻易地在父函数或调用函数生命周期之外存活。这中“持有”作用域有事会导致微小的内存泄露，但我们现在不讨论它。在上面的<code>asyncEach</code>示例中，实际发生的事情是：每一个我们在<code>for</code>循环中延迟的回调函数保存了到当前作用域的引用（当时这个作用域还存在着），并且持有该作用域即使<code>for</code>循环以及<code>asyncEach</code>函数已经退出。而回调函数存活在<code>for</code>循环之外，因为回调函数实例被通过setTimeout添加至事件队列中，因此作用域变量例如<code>arr</code>和<code>i</code>还活着，但是现在<code>i</code>的值变成了<code>3</code>，因为<code>for</code>循环在之前已经同步执行到结束了。在每一个回调中，<code>logItem</code>函数每次都访问arr[3]，也就是undefined。</p>
+<p>有很多种方式可以处理这个问题，但大多数都围绕着围绕我们希望之后捕获的变量周围添加一个额外的函数作用域。</p>
+<h2 id="基于异步的”each”函数-（第二次尝试）"><a href="#基于异步的”each”函数-（第二次尝试）" class="headerlink" title="基于异步的”each”函数 （第二次尝试）"></a>基于异步的”each”函数 （第二次尝试）</h2><p>一个在每个回调函数中获得所期望的<code>i</code>值的解决方法是，在我们希望捕获的变量周围引入一个“立即执行的函数表达式”(<a href="http://en.wikipedia.org/wiki/Immediately-invoked_function_expression" target="_blank" rel="external">immediately-invoked function expression, IIFE</a>)。一个IIFE有多种用法，其中一个就是当你没别的办法获取一个作用域时，强制创造一个作用域（例如在<code>for</code>循环中）。<a href="http://jslinterrors.com/dont-make-functions-within-a-loop" target="_blank" rel="external">这在循环中是不被建议的</a>，但是它可以起到作用：</p>
+<pre><code>// Not recommended
+function asyncEach2(arr, callback) {
+    for (var i = 0; i &lt; arr.length; ++i) {
+        // Use an IIFE wrapper to capture the current value of &quot;i&quot; in &quot;iCopy&quot;
+        // &quot;iCopy&quot; is unique for each iteration of the loop.
+        (function(iCopy) {
+            setTimeout(function() {
+                callback(arr[iCopy]);
+            }, 0);
+        }(i));
+    }
+}
+
+console.log(&quot;begin&quot;);
+asyncEach([1, 2, 3], logItem);
+console.log(&quot;end&quot;);
+</code></pre><p>现在我们能得到所期望的结果了：</p>
+<pre><code>begin
+end
+1
+2
+3
+</code></pre><p>这之所以能够起作用是因为我们在每一个函数迭代周期创造了一个内部函数作用域，并且我们创建了新的变量<code>iCopy</code>并赋予其每个迭代周期中<code>i</code>的值。<code>iCopy</code>在每一个循环周期都是独一无二的，因此我们不再会遇到在作用域外引用一个变量的问题，在之前的示例中，我们在得到它之前它就变掉了。</p>
+<h2 id="基于异步的”each”函数-（第三次尝试）"><a href="#基于异步的”each”函数-（第三次尝试）" class="headerlink" title="基于异步的”each”函数 （第三次尝试）"></a>基于异步的”each”函数 （第三次尝试）</h2><p>一个更倾向的解决问题的方式不是在循环内部使用IIFE，而是在循环外创建一个函数以创造我们的函数作用于，像这样：</p>
+<pre><code>function asyncEach3(arr, callback) {
+    // Utility inner function to create a wrapper function for the callback
+    function makeCallbackWrapper(arr, i, callback) {
+        // Create our function scope for use inside the loop
+        return function() {
+            callback(arr[i]);
+        }
+    }
+
+    for (var i = 0; i &lt; arr.length; ++i) {
+        setTimeout(makeCallbackWrapper(arr, i, callback), 0);
+    }
+}
+
+console.log(&quot;begin&quot;);
+asyncEach3([1, 2, 3], logItem);
+console.log(&quot;end&quot;);
+</code></pre><p>这一次，我们使用了一个单独的函数<code>makeCallbackWrapper</code>来为每个循环迭代创造我们的函数作用域。这次代码更简洁，容易阅读和维护，并且避免了”循环内IIFE”所带来的性能问题。</p>
+<h2 id="基于异步的”each”函数-（第四次尝试）"><a href="#基于异步的”each”函数-（第四次尝试）" class="headerlink" title="基于异步的”each”函数 （第四次尝试）"></a>基于异步的”each”函数 （第四次尝试）</h2><p>另一个更先进的在<code>for</code>循环内部创造作用域的方式是使用函数绑定或者<a href="http://en.wikipedia.org/wiki/Partial_application" target="_blank" rel="external">partial application</a>，就像使用原生的<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind" target="_blank" rel="external">Function.prototype.bind</a>函数（只有新的浏览器支持），或者使用由<a href="http://underscorejs.org/" target="_blank" rel="external">Underscore</a>，<a href="http://lodash.com/" target="_blank" rel="external">Lo-Dash</a>，<a href="http://jquery.org/" target="_blank" rel="external">jQuery</a>三者任意一个提供的<code>bind</code>实现。</p>
+<p>函数绑定以及partial application是更大的话题，会在今后的博客文章中讨论。</p>
+<pre><code>function asyncEach4(arr, callback) {
+    for (var i = 0; i &lt; arr.length; ++i) {
+        // boundCallback is a new function which has arr[i] permanently
+        // set (partially applied) as its first argument.  The &quot;null&quot; argument
+        // is the binding for the `this` context variable in the callback, which
+        // we don&apos;t care about in this example...
+        var boundCallback = callback.bind(null, arr[i]);
+        setTimeout(boundCallback, 0);
+    }
+}
+
+console.log(&quot;begin&quot;);
+asyncEach4([1, 2, 3], logItem);
+console.log(&quot;end&quot;);
+</code></pre><h2 id="异步代码的执行顺序"><a href="#异步代码的执行顺序" class="headerlink" title="异步代码的执行顺序"></a>异步代码的执行顺序</h2><p>我们要如何才能在使用<code>asyncEach</code>时保持日志纪录顺序呢，像原先同步的<code>each</code>例子一样：</p>
+<pre><code>begin
+1
+2
+3
+end
+</code></pre><p>下篇文章讨论。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这只是一个JavaScript中基于回调的API以及异步编程的基本介绍。在今后的博客中，我将会探索如何在asyncEach函数中获取你所期望的顺序执行的功能，这样我们仍然能打印<code>begin, 1, 2, 3, end</code>即使回调函数是异步的情况。我也会讨论JavaScript中异步编程的其他问题，包括函数上下文变量context是如何与回调一起工作的，“回调地狱”的概念，以及Javascript中的promise是如何解决这些问题的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/10/07/embracing-async-in-javascript-part-1/" data-id="cirfvhfow0013bknbp562ufyk" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Design-of-Q" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2014/08/18/Design-of-Q/" class="article-date">
+  <time datetime="2014-08-19T02:58:48.000Z" itemprop="datePublished">2014-08-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog-hexo/2014/08/18/Design-of-Q/">Design-of-Q</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>/*<br>本文档的目的是通过增量的、回顾其主要设计决策的方式来构建一个promise库，以此解释promises如何工作以及为何采用这样独特的方式实现。旨在让用户可以自由的体验到不同的实现方式以便满足其自身的需求，而不必错过任何重要的细节。</p>
+<p>-</p>
+<p>设想一下你正在编写一个无法立即返回一个值的函数。最显而易见的API是：将最终结果传递到一个作为参数的回调函数中，来代替将其返回。<br>*/</p>
+<pre><code>var oneOneSecondLater = function (callback) {
+    setTimeout(function () {
+        callback(1);
+    }, 1000);
+};
+</code></pre><p>/*<br>这是一个解决这种琐碎问题的一个非常简单的方案，但它还有很多进步的空间。</p>
+<p>一个更通用的解决方案会同时为返回值以及被抛出的异常提供同样的工具（即回调函数）。有几个显而易见的方式来扩展回调模式以处理异常。其中一个是同时提供一个普通的回调函数(callback)以及一个处理错误的回调函数(errback)。<br>*/</p>
+<pre><code>var maybeOneOneSecondLater = function (callback, errback) {
+    setTimeout(function () {
+        if (Math.random() &lt; .5) {
+            callback(1);
+        } else {
+            errback(new Error(&quot;Can&apos;t provide one.&quot;));
+        }
+    }, 1000);
+};
+</code></pre><p>/*<br>还有其他的解决方案，区别在于将错误作为回调函数的一个参数传入，以位置或者“哨兵值“进行区分。但是，这样的解决方案没有一个事实上考虑了被抛出的异常。异常以及try/catch块的目的是延后明确处理异常的时间直到程序已经回到一个有意义尝试从异常中恢复的点。如果异常没有被处理，我们需要一些机制来隐式地传播异常。</p>
+<h1 id="Promises"><a href="#Promises" class="headerlink" title="Promises"></a>Promises</h1><p>考虑一个更普遍的解决方式，代替返回值或者抛出异常，函数返回一个表示函数最终结果的对象，要么成功，要么失败。这个对象，无论是从打比方还是命名的角度来说，就是一个最终要被处理的promise，我们可以在promise之上调用函数来观测它是被满足还是被拒绝。如果这个promise被拒绝而并没有被主动的观测到，那么其他衍生的promise会被因为一些原因被隐式地拒绝。</p>
+<p>在下面这个特殊的设计迭代中，我们将promise设计为一个带有以回调函数为参数的”then”函数的对象。<br>*/</p>
+<pre><code>var maybeOneOneSecondLater = function () {
+    var callback;
+    setTimeout(function () {
+        callback(1);
+    }, 1000);
+    return {
+        then: function (_callback) {
+            callback = _callback;
+        }
+    };
+};
+</code></pre><p>/*<br>这种设计有两个不足：</p>
+<ul>
+<li>第一个then的调用者决定被使用的回调函数。如果每一个被注册的回调函数都会被resolution通知到的话会更好。</li>
+<li>如果回调函数在promise被构造多于一秒之后注册，那么它不会被调用。</li>
+</ul>
+<p>一个更普遍的解决方式在于接受任意数量的回调函数并且允许他们无论在超时（更普遍的说<br>，resolution事件被触发）前或后均可注册。我们通过将promise设置为一个两种状态的对象来实现。</p>
+<p>一个promise最初处于unresolved状态，并且所有的回调函数都被加入一个pending状态观测者的数组中。当promise被resolve之后，所有的观测者都会被通知到。我们通过判断是否这个pending回调函数的队列存在的方式来区分状态是否被转换，我们在resolution之后会扔掉它（这个队列）。<br>*/</p>
+<pre><code>var maybeOneOneSecondLater = function () {
+    var pending = [], value;
+    setTimeout(function () {
+        value = 1;
+        for (var i = 0, ii = pending.length; i &lt; ii; i++) {
+            var callback = pending[i];
+            callback(value);
+        }
+        pending = undefined;
+    }, 1000);
+    return {
+        then: function (callback) {
+            if (pending) {
+                pending.push(callback);
+            } else {
+                callback(value);
+            }
+        }
+    };
+};
+</code></pre><p>/<em><br>这样已经足够好了，如果将其改为一个功能函数的话会非常有用处。一个deferred是一个拥有两个部分的对象：一个用来注册观测者，另一个用来将resolution通知观测者。<br>（见 design/q0.js）
+</em>/</p>
+<pre><code>var defer = function () {
+    var pending = [], value;
+    return {
+        resolve: function (_value) {
+            value = _value;
+            for (var i = 0, ii = pending.length; i &lt; ii; i++) {
+                var callback = pending[i];
+                callback(value);
+            }
+            pending = undefined;
+        },
+        then: function (callback) {
+            if (pending) {
+                pending.push(callback);
+            } else {
+                callback(value);
+            }
+        }
+    }
+};
+
+var oneOneSecondLater = function () {
+    var result = defer();
+    setTimeout(function () {
+        result.resolve(1);
+    }, 1000);
+    return result;
+};
+
+oneOneSecondLater().then(callback);
+</code></pre><p>/<em><br>现在这个resolve有一个瑕疵：它能够被调用多次，从而改变被promised了的结果。它没有能够符合“一个函数只能要么返回一个值要么抛出一个错误”的事实要求。我们可以通过只允许第一次调用来设定resolution的方式保护结果免于意外或者恶意的重置。
+</em>/</p>
+<pre><code>var defer = function () {
+    var pending = [], value;
+    return {
+        resolve: function (_value) {
+            if (pending) {
+                value = _value;
+                for (var i = 0, ii = pending.length; i &lt; ii; i++) {
+                    var callback = pending[i];
+                    callback(value);
+                }
+                pending = undefined;
+            } else {
+                throw new Error(&quot;A promise can only be resolved once.&quot;);
+            }
+        },
+        then: function (callback) {
+            if (pending) {
+                pending.push(callback);
+            } else {
+                callback(value);
+            }
+        }
+    }
+};
+</code></pre><p>/*<br>你可以设置一个参数，在这种情况下要么抛出一个错误或者忽略之后所有其他resolution。一个测试就是给予resolver一串worker，并竞争resolve该promise，而剩余的resolution会被忽略。如果你不想让这些worker知道谁获胜了，这也是可行的。下文中，所有的示例都会忽略多重resolution而不是抛出异常。</p>
+<p>现在，defer可以同时处理多resolution和多observation的情况。（见 design/q1.js）</p>
+<hr>
+<p>源于两个单独的立场，这个设计衍生出了几种不同的变化。第一种立场是：将promise和deferred中的resolver部分分离或者结合都是有用的。通过某种方式从其他值中识别promise也是有用的。</p>
+<p>-</p>
+<p>将promise从resolver中分离开允许我们在最小特权原则下进行编码。给予某人一个promise，应该仅仅给予他观测resolution的权力，而给予某人一个resolver，应该仅仅给予他决定resolition的权力。一方的权力绝不不应该被授予另一方。通过时间的检验我们发现，任何过度的授权都会不可避免地被滥用，并且这将会非常难以编写。</p>
+<p>然而，分离的不好之处在于，快速地废除promise对象会给垃圾回收器带来额外负担。</p>
+<p>-</p>
+<p>以外，有非常多的方式来区分promise以及其他值。最显而易见并且最重要的区分方式是使用原型继承（design/q2.js）<br>*/</p>
+<pre><code>var Promise = function () {
+};
+
+var isPromise = function (value) {
+    return value instanceof Promise;
+};
+
+var defer = function () {
+    var pending = [], value;
+    var promise = new Promise();
+    promise.then = function (callback) {
+        if (pending) {
+            pending.push(callback);
+        } else {
+            callback(value);
+        }
+    };
+    return {
+        resolve: function (_value) {
+            if (pending) {
+                value = _value;
+                for (var i = 0, ii = pending.length; i &lt; ii; i++) {
+                    var callback = pending[i];
+                    callback(value);
+                }
+                pending = undefined;
+            }
+        },
+        promise: promise
+    };
+};
+</code></pre><p>/*<br>使用原型继承的缺点在于它使得一个项目中只能使用一种promise库。这会难以实施，使实施依赖变成一种灾难。</p>
+<p>另一种实现方式是使用duck-typing，通过是否存在某种约定命名的方法来区分promise以及其他对象。在我们的案例中，CommonJS/Promises/A创立了通过是否使用了”then”的方式来区分promise以及其他值。这个方式的缺点是无法判断那些只是碰巧有一个”then”方法的对象。在实际状况中，这并不是一个问题，并且这种实现”可以then”的微小差异是可以被管理的。<br>*/</p>
+<pre><code>var isPromise = function (value) {
+    return value &amp;&amp; typeof value.then === &quot;function&quot;;
+};
+
+var defer = function () {
+    var pending = [], value;
+    return {
+        resolve: function (_value) {
+            if (pending) {
+                value = _value;
+                for (var i = 0, ii = pending.length; i &lt; ii; i++) {
+                    var callback = pending[i];
+                    callback(value);
+                }
+                pending = undefined;
+            }
+        },
+        promise: {
+            then: function (callback) {
+                if (pending) {
+                    pending.push(callback);
+                } else {
+                    callback(value);
+                }
+            }
+        }
+    };
+};
+</code></pre><p>/<em><br>下一个大的步骤是使它可以简单的生成promise，使用从旧的promise中获取的值来构造新的promise。假设你收到从数个函数调用中得到的两个数字的promise，我们应该可以创建他们的和的promise。考虑一下这用callback是怎样实现的。
+</em>/</p>
+<pre><code>var twoOneSecondLater = function (callback) {
+    var a, b;
+    var consider = function () {
+        if (a === undefined || b === undefined)
+            return;
+        callback(a + b);
+    };
+    oneOneSecondLater(function (_a) {
+        a = _a;
+        consider();
+    });
+    oneOneSecondLater(function (_b) {
+        b = _b;
+        consider();
+    });
+};
+
+twoOneSecondLater(function (c) {
+    // c === 2
+});
+</code></pre><p>有非常多的原因证明，这种实现是非常脆弱的，特别是它需要明确的编码来进行通知（在本例中是使用一个哨兵值），是否是一个回调函数被调用了。此外，我们必须注意考虑到在事件循环结束前被发出的条件：<code>consider</code>函数需要在它被使用之前出现。</p>
+<p>在下面的几个步骤中，我们会能够用promise实现它，使用更少的代码以及隐式地处理错误传递。<br>*/</p>
+<pre><code>var a = oneOneSecondLater();
+var b = oneOneSecondLater();
+var c = a.then(function (a) {
+    return b.then(function (b) {
+        return a + b;
+    });
+});
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/08/18/Design-of-Q/" data-id="cirfvhfms0000bknbeb5rt7pb" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-The-introduction-to-Reactive-Programming-you-ve-been-missing" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2014/07/05/The-introduction-to-Reactive-Programming-you-ve-been-missing/" class="article-date">
+  <time datetime="2014-07-06T04:32:48.000Z" itemprop="datePublished">2014-07-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog-hexo/2014/07/05/The-introduction-to-Reactive-Programming-you-ve-been-missing/">[译]函数响应式编程</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>你所期待已久的函数响应式编程简介</p>
+<p>原文地址：<a href="https://gist.github.com/staltz/868e7e9bc2a7b8c1f754" target="_blank" rel="external">https://gist.github.com/staltz/868e7e9bc2a7b8c1f754</a></p>
+<p>你一定对学习这个被称为（函数）响应式编程的东西感兴趣。</p>
+<p>这东西学起来很难，缺乏好的资料使它变得更难。当我开始学习的时候，我尝试着寻找教程。我只找到少量的实践指南，而它们也仅仅是挠了挠表面，从未挑战去建立整个架构。当你想了解一些函数的时候，库的文档往往对你没什么帮助。我的意思是，老实说，看看这个：</p>
+<pre><code>合并元素的索引，然后把一个可观测序列的可观测序列转化为一个可观测序列，仅仅从最近的可观测序列中取值。通过这种方法将每一个可被观测的序列中的对象投射到一个新的可观测序列的序列上。
+</code></pre><p>天呐。。</p>
+<p>我读了两本书，其中一本只是描绘了蓝图，另一本则一头钻进“如何使用FRP库”的问题中。最后我通过那种困难的方式学习了响应式编程：一边构造响应式编程项目一边学习。在我在Futurice的工作中，我在一个真正的项目上使用了它，当我遇到难题的时候我的一些同事帮助了我。</p>
+<p>在学习的旅途中最困难的是用函数响应式编程进行思考。很多时候需要抛弃那些典型的、有状态的编程习惯，并迫使你的大脑在另一种模式下工作。我没有在网上找到任何这方面相关的内容，我任何需要这样一个“如何用函数响应式编程进行思考”的教程，以便你们可以开始迈出第一步。在那之后，库文档会帮你照亮后面的道路。希望这可以帮到你们。</p>
+<p>#什么是函数响应式编程（FRP）？</p>
+<p>对于函数相应式编程，网上有很多不好的解释以及定义。维基百科和平常一样说得太空泛以及理论化了。Stackoverflow的规范的答案显然不适合新手。Reactive Manifesto看起来像是你要讲给你公司里的项目经理或者商务人士所听的。微软Rx术语“Rx = Observables + LINQ + Schedulers”过于沉重（那么的“微软化”），我们大多数人都会感到困惑。像“reactive”，“”propagation of change”这种术语和我们典型的MV*以及最爱的编程语言已经做到了。我的框架当然是视图（Views）响应模型（Models）的，变化当然是可以传递的，否则的话什么也不会呈现。</p>
+<p>所以，我们就不要继续说上面那些了。</p>
+<p>####函数响应式编程就是通过异步数据流进行编程</p>
+<p>在某种程度上，这并不是什么新的东西。事件总线或者典型的单击事件就已经是异步事件流了，你在它们上面可以进行观察或者做点其他的事情。函数响应式编程就是那些玩意儿再加上些内固醇。你可以对任何东西创造数据流，而不仅仅是click或者hover事件。流非常的廉价并且无处不在，任何东西都可以是流，变量、用户输入、属性、缓存、数据结构，等等。比如，设想一下你的Twitter feed是一个像单击事件一样的数据流。你可以监听这个是流并且做出相应的反应。</p>
+<p><b>更重要的是，你拥有了一个神奇的工具箱来连接、创造并且过滤任何这些流。</b>这就是“函数式”的魔力。一个流可以作为另一个流的输入，甚至可以是多个流作为一个流的输入。可以合并两个流。你可以过滤一个流而得到你另一个只包含你所感兴趣的事件的流。你可以把数据从一个流映射到另一个流。</p>
+<p>如果流对于函数响应式编程如此重要，让我们仔细的来看看它们，从我们熟悉的“点击一个按钮”的事件流开始。</p>
+<p><img src="https://camo.githubusercontent.com/28787087e17e13046655c0f71d6e4080c3508b10/68747470733a2f2f676973742e67697468756275736572636f6e74656e742e636f6d2f7374616c747a2f38363865376539626332613762386331663735342f7261772f343964613639346232343839663965376237323736646633316131646362323036313739613439362f7a636c69636b73747265616d2e706e67" alt="image"></p>
+<p>流是正在进行的事件按时间排序得到的序列。它可以广播三种不同的东西：一个值（属于某种类型）、一个错误，或者一个“已完成”的信号。设想一下，比如“已完成”会在当前包含此按钮的窗口或者视图被关闭时发生。</p>
+<p>我们只采用<b>异步</b>的方式捕获这些被广播的事件，通过定义一个“当某个值被广播时执行”的函数，一个“当错误被广播时执行”的函数以及一个“当完成被广播时执行”的函数来完成。有时候后两个可以被省略，你可以只专注于定义那个捕获某个值的函数。对这个流进行“监听”被成为订阅。我们所定义的函数是观察者。流是被观测的主体（或被称为“可观测对象”）。这正是<a href="https://en.wikipedia.org/wiki/Observer_pattern" target="_blank" rel="external"><b>观察者设计模式</b></a></p>
+<p>另一个画这张图的方式是使用ASCII，我们将在本教程的某些部分使用：</p>
+<pre><code>--a---b-c---d---X---|-&gt;
+
+a, b, c, d 是被广播的值
+X 是一个错误
+| 是“已完成”信号
+---&gt; 是时间轴
+</code></pre><p>既然这已经感觉如此熟悉了，并且我不想让你们感到厌烦，让我们来做点新的事情：我们接下来要用原有的单击事件流构建出一些新的单击事件流。</p>
+<p>首先，让我们创造一个计数事件流用来表明这个按钮被按了多少次。在函数响应式编程的公共库里，每一个流都有很多种函数附在它的上面，例如<code>map</code>, <code>filter</code>, <code>scan</code> 等等。当你调用其中一个函数时，比如<code>clickStream.map(f)</code>，它会基于当前的点击流返回一个新的流。它并不对原先的点击流做任何修改。这就是所谓的不变性，它和FRP流的关系就像煎饼和糖浆一样如此的美好。这允许我们进行链式调用，比如：<code>clickStream.map(f).scan(g)</code>:</p>
+<pre><code>点击流: ---c----c--c----c------c--&gt;
+       vvvvv map(c 变为 1)    vvvv
+       ---1----1--1----1------1--&gt;
+       vvvvvvvvv scan(+) vvvvvvvvv
+计数流: ---1----2--3----4------5--&gt;
+</code></pre><p>函数<code>map(f)</code>根据你所提供的函数<code>f</code>，将每一个被广播的值替换成新的值，并放入新的流中。在我们的例子里，我们把每一次点击映射为数字1.函数<code>scan(f)</code>汇集这个流上前面所有的值，产生<code>x = g(accumulated, current)</code>，而<code>g</code>在本例中只是一个简单的相加函数。这样，每当点击发生的时候，<code>counterStream</code>就会广播一次点击总数。</p>
+<p>为了展现FRP的真正威力，我们考虑这样一个场景：你想要一个双击的事件流，为了让它更有趣一点，我们希望这个流把“三击”（更一般的情况，大于两次的点击）也考虑为双击。做一次深呼吸，想象一下在传统的、有状态的方式下你会怎样做？我敢打赌这一定相当麻烦并且涉及到许多用来保持状态和纪录时间间隔的变量。</p>
+<p>好吧，在FRP中这非常简单。事实上，它的逻辑只需要<a href="http://jsfiddle.net/staltz/4gGgs/27/" target="_blank" rel="external">4行代码</a>。但首先，让我们忽略代码，用思维图是最好的理解以及构建流的方式。</p>
+<p><img src="https://camo.githubusercontent.com/74d215aac2e23ae940cf5d1f4e08cc8878c9fecf/68747470733a2f2f676973742e67697468756275736572636f6e74656e742e636f6d2f7374616c747a2f38363865376539626332613762386331663735342f7261772f623538306164346133336236336163623263656439623865356539306661616238636137656632362f7a6d756c7469636c69636b73747265616d2e706e67" alt="image"></p>
+<p>灰色方格里面是讲一个流转化为另一个流的函数。简言之，我们首先把单击聚集到一个列表中，无论何时250毫秒的“事件沉默”发生（这正是<code>buffer(stream.throttle(250ms)</code>所做的）。现在不用担心理解细节，我们现在只是在演示使用FRP。它的结果是一个列表的流，在此基础上我们通过<code>apply()</code>将每一个列表映射为表示它的长度的数字。最后我们通过<code>filter(x &gt;= 2)</code>忽略数字<code>1</code>，这样就完成了用3个步骤创建我们所需要的流。我们接下来就可以订阅（监听）这个流并按我们所希望的进行处理。</p>
+<p>我希望你喜欢这种方法的美丽之处。这个例子仅仅是冰山一角：你可以用这种方法处理不同类型的流。例如：在API返回结果的流中，有很多其他可用的函数。</p>
+<p>#“为什么我应该考虑采用FRP？”<br>FRP提高了你的代码的抽象层次，这样你就可以专注于业务逻辑所互相依存的事件中，而不必摆弄大量的实现细节。用FRP写出的代码可能会更简洁。</p>
+<p>在现代网络以及移动应用程序中，它的好处更明显，这些应用往往与数据事件相关的UI事件有着高度的交互。10年前，与网页进行交互基本上就是向后端提交一个长的表单，并且在前端进行简单的呈现。而现在，应用程序已经进化到更实时：修改一个变淡字段可以自动触发保存到后端，“喜欢”一些内容可以实时反映给其他已连接的用户，等等。</p>
+<p>当今的应用程序都有非常多各式各样的实时事件的使得与用户的高度交互体验成为可能。我们需要适当的工具来妥善处理它，而函数响应式编程就是答案。</p>
+<p>#Thinking in FRP，例<br>让我们来考虑一个真正的场景，一个现实世界的例子来一步步引导你如何用FRP进行思考。没有集合的示例，没有解释不完全的内容。在本教程的最后我们将能够产生真正的功能代码，同时我们也会知道为什么我们这样做。</p>
+<p>我选择了<b>JavaScript</b>和<a href="https://github.com/Reactive-Extensions/RxJS" target="_blank" rel="external">RxJS</a>作为这例子的工具，只有一个原因：JavaScript是最熟悉的语言，同时<a href="https://rx.codeplex.com/" target="_blank" rel="external">Rx*库家族</a>被广泛用于许多语言和平台。(.NET, Java, Scala, Clojure, JavaScript, Ruby, Python, C++, Objective-C/Cocoa, Groovy, etc).因此，无论你使用什么样的工具，你都可以从接下来的教程中获益。</p>
+<p>#实现一个“你可能感兴趣的人”推荐框<br>在Twitter上有一个UI元素用来建议你可以关注的账号<br><img src="https://camo.githubusercontent.com/c30617647900cd2f1e03b2455fc31f72c000f0d2/68747470733a2f2f676973742e67697468756275736572636f6e74656e742e636f6d2f7374616c747a2f38363865376539626332613762386331663735342f7261772f323133303335373061316338633539396535396638663866626461326430336162393433616339622f7a74776974746572626f782e706e67" alt="image"></p>
+<p>我们要关注模仿其核心功能，它们是：</p>
+<ul>
+<li>在开启时，从API读取账号数据并展示3个建议</li>
+<li>在点击“刷新”时，向3行读取3个其他账号建议</li>
+<li>在点击 “X” 按钮时，关闭其当前对应的账号并显示另外一个</li>
+<li>每一行显示账号的头像并链接到它们的主页</li>
+</ul>
+<p>我们可以省去其他功能和按钮因为它们是次要的。并且Twitter最近关闭了未经授权的公共API。让我们来为Github来构建一个类似的UI。Github提供了获取用户的API。</p>
+<p>如果你想要快速浏览的话，完整的代码已经放在<a href="http://jsfiddle.net/staltz/8jFJH/48/了。" target="_blank" rel="external">http://jsfiddle.net/staltz/8jFJH/48/了。</a></p>
+<p>#请求和响应</p>
+<p><b>如何用FRP解决这个问题？</b>让我们开始，（几乎）所有的东西都可以是一个流。那就是FRP的咒语。让我们从最简单的功能开始：“当启动时，从API获取加载3个账户信息”。这没有任何特别之处，仅仅是(1) 发送一个请求， (2)获取响应 (3)呈现响应。所以我们继续，让我们的请求成为一个流。起初这会觉得有点过于简单了，但是我们需要从最基本的开始，不是吗？</p>
+<p>在启动时我们只需要执行一个请求，所以如果我们将其建模为一个数据流，它会是一个只广播一个值的流。之后，我们知道我们会发出很多请求，但现在，只有一个。</p>
+<pre><code>--a------|-&gt;
+
+这里a是一个字符串 &apos;https://api.github.com/users&apos;
+</code></pre><p>这是一个我们想要请求的URL，当请求事件发生时，它告诉我们两件事情：“什么时候”与“什么”。“什么时候”请求应该被执行，也就是什么时候事件应该被广播。以及“什么”应该被响应，也就是被广播的值是什么：一个包含URL的字符串。</p>
+<p>创建一个带有单一值这样的流在Rx*是非常简单的。流的官方术语是“可观测对象”，因为它可以被观测，但是我觉得这是个非常愚蠢的名字，所以我把它成为一个流。</p>
+<pre><code>var requestStream = Rx.Observable.returnValue(&apos;https://api.github.com/users&apos;);
+</code></pre><p>但是现在，这只是一个字符串的流，没法做其他操作，因此，我们要在这个值被广播的时候触发一些事情。这就是通过<a href="https://github.com/Reactive-Extensions/RxJS/blob/master/doc/api/core/observable.md#rxobservableprototypesubscribeobserver--onnext-onerror-oncompleted" target="_blank" rel="external">描述</a>这个流做到的。</p>
+<pre><code>requestStream.subscribe(function(requestUrl) {
+  // 执行请求
+  jQuery.getJSON(requestUrl, function(responseData) {
+    // ...
+  });
+}
+</code></pre><p>注意我们在使用JQuery Ajax回调（我们假设你应该<a href="http://devdocs.io/jquery/jquery.getjson" target="_blank" rel="external">已经知道了</a>）来处理异步请求。但是等一下，FRP是用来处理异步数据流的。那个请求对应的相应不能是一个包含“将来一段时间会到达数据”的流吗？嗯，在概念的层面上，看起来的确是这样，所以让我们来试一下。<br>    requestStream.subscribe(function(requestUrl) {<br>      // 执行请求<br>      var responseStream = Rx.Observable.create(function (observer) {<br>        jQuery.getJSON(requestUrl)<br>        .done(function(response) { observer.onNext(response); })<br>        .fail(function(jqXHR, status, error) { observer.onError(error); })<br>         .always(function() { observer.onCompleted(); });<br>      });</p>
+<pre><code>  responseStream.subscribe(function(response) {
+    // 处理响应
+  });
+}
+</code></pre><p><code>Rx.Observable.create()</code>所做的就是通过显式通知每一个观察者（或者说是“订阅者”）数据事件(<code>onNext()</code>)或者错误(<code>onError()</code>)来创造你自己的流。我们刚刚所做的只是包装JQuery Ajax Promise。<b>等一下，这是否说明一个Promise就是一个可观测对象呢？</b></p>
+<p><img src="https://camo.githubusercontent.com/4df519edd2d527bf5e90b7d00e22cdc3c3be00d4/687474703a2f2f7777772e6d79666163657768656e2e6e65742f75706c6f6164732f333332342d616d617a65642d666163652e676966" alt="image"></p>
+<p>是的。</p>
+<p>可观测对象是一个Promise++。在Rx中你可以通过<code>var stream = Rx.Observable.fromPromise(promise)</code>很容易的把一个Promise转化为一个可观测对象，所以我们就这样用吧。唯一的区别在于，可观测对象并不与Promise/A+兼容，但是在概念上是没有冲突的。Promise是一个简单的带有单一广播值的可观测对象。FRP流相比起Promise而言允许很多返回值。</p>
+<p>这样很棒，说明了FRP至少和Promise一样强大。如果你相信Promise有点大肆炒作了，那么留意一下FRP的能力。</p>
+<p>现在回到我们的例子，如果你注意到了的话，我们在<code>subscribe()</code>中调用了另一个，这看起来就像是传说中的回调地狱。而且，创建<code>responseStream</code>是基于<code>requestStream</code>的。就像你之前听到的那样，在FRP中我们有在其他流以外简单的转换以及创建新的流的方式。我们正应该那样做。</p>
+<p>你现在应该知道的一个基本的函数是<code>map(f)</code>，它获取流A中的所有值，对其调用<code>f()</code>，然后产生出流B的一个对应的值。如果我们对我们的请求和响应那样做的话，我们就可以把请求URL映射到响应Promise（伪装成流）中。</p>
+<pre><code>var responseMetastream = requestStream
+  .map(function(requestUrl) {
+    return Rx.Observable.fromPromise(jQuery.getJSON(requestUrl));
+  });
+</code></pre><p>这样我们就创建了一个名为”metaStream”的野兽：一个流的流。不用惊慌，metastream就是一个流，并且它所广播的值是另一个流。你可以把它想象成是指针：每一个被广播的值是一个指向另一个流的指针。在我们的例子中，每一个请求URL被映射到一个指向包含了对应的响应Promise流的指针。</p>
+<p><img src="https://camo.githubusercontent.com/96ffbf34242769e3ffa585594312e6da8a5ab099/68747470733a2f2f676973742e67697468756275736572636f6e74656e742e636f6d2f7374616c747a2f38363865376539626332613762386331663735342f7261772f653866643162623662643933353333636638616661653432626466313962646666393266626332632f7a726573706f6e73656d65746173747265616d2e706e67" alt="image"></p>
+<p>一个为响应创建的metaStream看起来让人疑惑，似乎并没有帮助到我们。我们只是想要一个简单的响应流，其中每一个广播的值是一个JSON对象，而不是一个JSON对象的Promise。过来和Flatmap先生问声好吧：它是一种将metaStream“平坦化”的<code>map()</code>，它通过把所有广播给“分支”流的东西广播给“主干”流来实现。Flatmap不是一种“修复”，metaStream也不是一个bug，他们都是用来处理FRP中异步响应的真正的工具。</p>
+<pre><code>var responseStream = requestStream
+  .flatMap(function(requestUrl) {
+    return Rx.Observable.fromPromise(jQuery.getJSON(requestUrl));
+  });
+</code></pre><p><img src="https://camo.githubusercontent.com/56bb9263de95fdecdcb4fa75c7c8da63cd80f6dc/68747470733a2f2f676973742e67697468756275736572636f6e74656e742e636f6d2f7374616c747a2f38363865376539626332613762386331663735342f7261772f373436613565313733323833363862636261356462643339376238346665383037396565663764642f7a726573706f6e736573747265616d2e706e67" alt="image"></p>
+<p>好了，因为我们是根据请求流来定义响应流的，因此如果我们之后在请求流上有更多的的事件发生，那么我们会有对应的事件如预期一样在响应流上发生：</p>
+<pre><code>requestStream:  --a-----b--c------------|-&gt;
+responseStream: -----A--------B-----C---|-&gt;
+
+(小写字母是一个请求, 大写字母是其对应的响应)
+</code></pre><p>这样最终我们就得到了一个响应流，我们可以用它来呈现我们所接收到的数据。</p>
+<pre><code>responseStream.subscribe(function(response) {
+  // render `response` to the DOM however you wish
+});
+</code></pre><p>把所有的代码连接起来，现在我们有了：</p>
+<pre><code>var requestStream = Rx.Observable.returnValue(&apos;https://api.github.com/users&apos;);
+
+var responseStream = requestStream
+  .flatMap(function(requestUrl) {
+    return Rx.Observable.fromPromise(jQuery.getJSON(requestUrl));
+  });
+
+responseStream.subscribe(function(response) {
+  // render `response` to the DOM however you wish
+});
+</code></pre><p>#刷新按钮</p>
+<p>我还没有提交，返回的JSON是一个100用户的列表。API只允许我们指定页的偏移量，不允许指定页的大小，因此我们仅仅使用了3个数据而浪费了其他97个。我们现在暂时可以忽略这个问题，因为之后我们会看到我们是如何缓存响应的。</p>
+<p>每次刷新按钮被点击，请求流应该广播一个新的URL，以便于我们得到一个新的响应。我们需要两个东西：一个单击事件的流（任何东西都可以成为流），并且我们需要根据刷新点击流来改变请求流。好在RxJS自带了从事件监听器构造可观测对象的工具。</p>
+<pre><code>var refreshButton = document.querySelector(&apos;.refresh&apos;);
+var refreshClickStream = Rx.Observable.fromEvent(refreshButton, &apos;click&apos;);
+</code></pre><p>既然刷新点击事件自身并不包含任何API URL，我们需要把每一个点击映射到一个实际的URL。现在我们将请求流改变为映射到API端和随机偏移量参数的刷新点击流。</p>
+<pre><code>var requestStream = refreshClickStream
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return &apos;https://api.github.com/users?since=&apos; + randomOffset;
+  });
+</code></pre><p>因为我是如此的愚蠢，我没有任何自动化的测试，我刚刚弄坏了我们之前构造的功能。现在在加载时不会有请求发出了，它仅仅在刷新按钮单击时才会发出。呃！我需要这两个行为：请求会在刷新单击或者加载时被发出。</p>
+<p>我们知道如何为我们两个功能构造不同的流：</p>
+<pre><code>var requestOnRefreshStream = refreshClickStream
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return &apos;https://api.github.com/users?since=&apos; + randomOffset;
+  });
+
+var startupRequestStream = Rx.Observable.returnValue(&apos;https://api.github.com/users&apos;);
+</code></pre><p>但是现在我们如何才能把它们合二为一呢？嗯，有<code>merge()</code>这个函数。用图来解释，它是这样工作的：</p>
+<pre><code>stream A: ---a--------e-----o-----&gt;
+stream B: -----B---C-----D--------&gt;
+          vvvvvvvvv merge vvvvvvvvv
+          ---a-B---C--e--D--o-----&gt;
+</code></pre><p>现在它应该变得简单了：</p>
+<pre><code>var requestOnRefreshStream = refreshClickStream
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return &apos;https://api.github.com/users?since=&apos; + randomOffset;
+  });
+
+var startupRequestStream = Rx.Observable.returnValue(&apos;https://api.github.com/users&apos;);
+
+var requestStream = Rx.Observable.merge(
+  requestOnRefreshStream, startupRequestStream
+);
+</code></pre><p>这里有一个更干净的方式，不需要中间流：</p>
+<pre><code>var requestStream = refreshClickStream
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return &apos;https://api.github.com/users?since=&apos; + randomOffset;
+  })
+  .merge(Rx.Observable.returnValue(&apos;https://api.github.com/users&apos;));
+</code></pre><p>更短一些，可读性更高一些：</p>
+<pre><code>var requestStream = refreshClickStream
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return &apos;https://api.github.com/users?since=&apos; + randomOffset;
+  })
+  .startWith(&apos;https://api.github.com/users&apos;);
+</code></pre><p><code>startWith()</code>方法按你所想象的那样工作。无论你的输入流看起来什么样，<code>startWith(x)</code>的输出流会在开始包含<code>x</code>，但是我并没有足够的DRY（Don’t Repeat Yourself），我重复了API的字符串。一种修复它的方式是将<code>startWith()</code>移动到<code>refreshClickStream</code>的附近，其本质就是在加载时“模拟”一次刷新操作。</p>
+<pre><code>var requestStream = refreshClickStream.startWith(&apos;startup click&apos;)
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return &apos;https://api.github.com/users?since=&apos; + randomOffset;
+  });
+</code></pre><p>好的，如果你现在返回我们之前“弄坏自动化测试”的地方，你应该看到两者唯一的区别在于我添加了<code>startWith()</code>。</p>
+<p>#用流为3个关注推荐建模<br>直到现在，我们仅仅在发生responseStream的<code>subscribe()</code>的呈现这一步触及到推荐UI元素。现在对于刷新按钮，我们有一个问题：只要你点击了“刷新”，当前的3个推荐并没有被清除。新的推荐仅仅在响应到达之后才能被获取，但是为了让UI看起来能好一些，我们需要在刷新按钮单击时清除当前的推荐。</p>
+<pre><code>refreshClickStream.subscribe(function() {
+  // clear the 3 suggestion DOM elements 
+});
+</code></pre><p>不，别那么快，伙计。这样是不好的，因为饿哦们现在有两个能影响推荐DOM元素的订阅者（另一个是<code>responseStream.subscribe()</code>），并且听起来这并没有真正做到关注点隔离。还记得FRP的咒语吗？</p>
+<p><img src="https://camo.githubusercontent.com/348b1eb60fa6c0d44d7f091240f0ff462b539619/68747470733a2f2f676973742e67697468756275736572636f6e74656e742e636f6d2f7374616c747a2f38363865376539626332613762386331663735342f7261772f373936626539623636666637636535386239306536356134396533623938333262383632646564642f7a6d616e7472612e6a7067" alt="image"></p>
+<p>因此让我们将推荐建模成一个流，其中每一个被广播的值是一个包含推荐数据的JSON对象。我们会分别为3个推荐做这件事情。我们为推荐1所做的流看起来像是这样：</p>
+<pre><code>var suggestion1Stream = responseStream
+  .map(function(listUsers) {
+    // get one random user from the list
+    return listUsers[Math.floor(Math.random()*listUsers.length)];
+  });
+</code></pre><p>其他的<code>suggestion2Stream</code>和<code>suggestion3Stream</code>可以简单的从<code>suggestion1Stream</code>拷贝过来。这违反了DRY原则，但是这能够让我们的教程示例更简单。而且我任何思考如何避免这种情况是一个很好的锻炼。</p>
+<p>不像原来那样在responseStream的<code>subscribe()</code>中进行呈现，我们在这里做：</p>
+<pre><code>suggestion1Stream.subscribe(function(suggestion) {
+  // render the 1st suggestion to the DOM
+});
+</code></pre><p>回到“刷新时，清空推荐”，我们可以将刷新点击映射到空的推荐数据，并在<code>suggestion1Stream</code>包含它，像这样：</p>
+<pre><code>var suggestion1Stream = responseStream
+  .map(function(listUsers) {
+    // get one random user from the list
+    return listUsers[Math.floor(Math.random()*listUsers.length)];
+  })
+  .merge(
+    refreshClickStream.map(function(){ return null; })
+  );
+</code></pre><p>当我们呈现时，我们将空解释为“没有数据”，这样来隐藏其UI元素。</p>
+<pre><code>suggestion1Stream.subscribe(function(suggestion) {
+  if (suggestion === null) {
+    // hide the first suggestion DOM element
+  }
+  else {
+    // show the first suggestion DOM element
+    // and render the data
+  }
+});
+</code></pre><p>现在蓝图是这样：</p>
+<pre><code>refreshClickStream: ----------o--------o----&gt;
+     requestStream: -r--------r--------r----&gt;
+    responseStream: ----R---------R------R--&gt;   
+ suggestion1Stream: ----s-----N---s----N-s--&gt;
+ suggestion2Stream: ----q-----N---q----N-q--&gt;
+ suggestion3Stream: ----t-----N---t----N-t--&gt;
+</code></pre><p>其中<code>N</code>是<code>null</code>的意思</p>
+<p>为了做得更好，我们也可以在启动时呈现“空”的推荐。这是通过为推荐流添加<code>startWith(null)</code>来做到的：</p>
+<pre><code>var suggestion1Stream = responseStream
+  .map(function(listUsers) {
+    // get one random user from the list
+    return listUsers[Math.floor(Math.random()*listUsers.length)];
+  })
+  .merge(
+    refreshClickStream.map(function(){ return null; })
+  )
+  .startWith(null);
+</code></pre><p>其结果是：</p>
+<pre><code>refreshClickStream: ----------o---------o----&gt;
+     requestStream: -r--------r---------r----&gt;
+    responseStream: ----R----------R------R--&gt;   
+ suggestion1Stream: -N--s-----N----s----N-s--&gt;
+ suggestion2Stream: -N--q-----N----q----N-q--&gt;
+ suggestion3Stream: -N--t-----N----t----N-t--&gt;
+</code></pre><p>#关闭推荐并使用被缓存的响应<br>我们还有一个功能需要实现：每一个推荐都应该有一个<code>x</code>按钮来关闭它，并在原地加载另一个推荐。乍一想，你可能想说，每个按钮被点击时发送一个新的请求没什么问题：</p>
+<pre><code>var close1Button = document.querySelector(&apos;.close1&apos;);
+var close1ClickStream = Rx.Observable.fromEvent(close1Button, &apos;click&apos;);
+// and the same for close2Button and close3Button
+
+var requestStream = refreshClickStream.startWith(&apos;startup click&apos;)
+  .merge(close1ClickStream) // we added this
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return &apos;https://api.github.com/users?since=&apos; + randomOffset;
+  });
+</code></pre><p>这没办法工作。它会关闭并重新加载所有的推荐，而不只是我们点击的那一个。我们有非常多的方式解决这个问题，为了保持这件事情很有趣，我们通过重用之前的响应来解决这个问题。API的页大小为100而我们之前仅仅使用了3个，因此我们还有非常多的新鲜数据可以使用，而不需要更多的请求。</p>
+<p>再一次的，让我们用流来思考。当一个<code>close1</code>点击事件发生，我们希望使用最近一次被<code>responseStream</code>广播的响应来从响应列表中得到一个随机的用户。像这样：</p>
+<pre><code>    requestStream: --r---------------&gt;
+   responseStream: ------R-----------&gt;
+close1ClickStream: ------------c-----&gt;
+suggestion1Stream: ------s-----s-----&gt;
+</code></pre><p>在Rx*中有一个连接符函数被称为<code>combineLatest</code>似乎能解决我们的需求。它包含两个流A和B作为输入，当其中任何一个流广播一个值，<code>combineLatest</code>把两个流中最近被广播的值连接起来，并输出一个结果<code>c = f(x,y)</code>，其中f是一个你定义的函数。用图表来看更容易解释：</p>
+<pre><code>stream A: --a-----------e--------i--------&gt;
+stream B: -----b----c--------d-------q----&gt;
+          vvvvvvvv combineLatest(f) vvvvvvv
+          ----AB---AC--EC---ED--ID--IQ----&gt;
+
+f是大写函数
+</code></pre><p>我们可以在<code>close1ClickStream</code>和<code>responseStream</code>上使用combineLatest()，因此每当第一个关闭按钮被点击时，我们能广播最近一次的响应并为<code>suggestion1Stream</code>创建一个新的值。另一方面，combineLatest()是对称的：每当一个新的响应被广播到<code>responseStream</code>时，它会结合最近一次的“close 1”点击事件来创建一个新的推荐。这非常有趣，因为它允许我们简化之前<code>suggestion1Stream</code>的代码，如下：</p>
+<pre><code>var suggestion1Stream = close1ClickStream
+  .combineLatest(responseStream,             
+    function(click, listUsers) {
+      return listUsers[Math.floor(Math.random()*listUsers.length)];
+    }
+  )
+  .merge(
+    refreshClickStream.map(function(){ return null; })
+  )
+  .startWith(null);
+</code></pre><p>还有一个未解的难题。combineLatest()使用最近的两个来源，但是如果其中一个源还未广播任何值，那么combineLatest()不能向输出流创建数据事件。如果你看看上面的ASCII表格，你会发现当第一个流广播值a的时候，我们没有任何输出。直到第二个流广播了一个值b之后我们才得到第一个输出值。</p>
+<p>解决之道有很多，我们使用最简单的。即，在开始时模拟一次对”close 1”的点击：</p>
+<pre><code>var suggestion1Stream = close1ClickStream.startWith(&apos;startup click&apos;) // we added this
+  .combineLatest(responseStream,             
+    function(click, listUsers) {l
+      return listUsers[Math.floor(Math.random()*listUsers.length)];
+    }
+  )
+  .merge(
+    refreshClickStream.map(function(){ return null; })
+  )
+  .startWith(null);
+</code></pre><p>#总结</p>
+<p>你得到的所有代码如下：</p>
+<pre><code>var refreshButton = document.querySelector(&apos;.refresh&apos;);
+var refreshClickStream = Rx.Observable.fromEvent(refreshButton, &apos;click&apos;);
+
+var closeButton1 = document.querySelector(&apos;.close1&apos;);
+var close1ClickStream = Rx.Observable.fromEvent(closeButton1, &apos;click&apos;);
+// and the same logic for close2 and close3
+
+var requestStream = refreshClickStream.startWith(&apos;startup click&apos;)
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return &apos;https://api.github.com/users?since=&apos; + randomOffset;
+  });
+
+var responseStream = requestStream
+  .flatMap(function (requestUrl) {
+    return Rx.Observable.fromPromise($.ajax({url: requestUrl}));
+  });
+
+var suggestion1Stream = close1ClickStream.startWith(&apos;startup click&apos;)
+  .combineLatest(responseStream,             
+    function(click, listUsers) {
+  return listUsers[Math.floor(Math.random()*listUsers.length)];
+}
+  )
+  .merge(
+    refreshClickStream.map(function(){ return null; })
+  )
+  .startWith(null);
+// and the same logic for suggestion2Stream and suggestion3Stream
+
+suggestion1Stream.subscribe(function(suggestion) {
+  if (suggestion === null) {
+    // hide the first suggestion DOM element
+  }
+  else {
+    // show the first suggestion DOM element
+    // and render the data    
+  }
+});
+</code></pre><p><b>你可以在这里找到这个工作示例：<a href="http://jsfiddle.net/staltz/8jFJH/48/" target="_blank" rel="external">http://jsfiddle.net/staltz/8jFJH/48/</a></b></p>
+<p>这段代码虽短但是很密集：它包括通过适当分析关注点来管理多种事件，甚至还包括了响应的缓存。函数式风格使代码看起来更像陈述而非命令。我们并不是给定一串指令去执行，我们只是通过定义流之间的关系来完成。比如，我们使用FRP告诉程序<code>suggestion1Stream</code>是<code>close 1</code>流与最近一次响应用户的结合，同时，当刷新或者程序开始发生时将其置为<code>null</code>。</p>
+<p>同时，还要注意，代码中包含极少量的逻辑控制语句例如<code>if</code>, <code>for</code>, <code>while</code>，同时也没有JavaScript应用中常见的回调风格的控制流，这非常令人印象深刻。如果你想的话，你甚至可以在上述<code>subscribe()</code>中完全移除<code>if</code>和<code>else</code>而使用<code>filter()</code>（我将把实现细节留给你做练习）。在FRP中，我们有与流相关的函数例如<code>map</code>, <code>filter</code>, <code>scan</code>, <code>merge</code>, <code>combineLatest</code>, <code>startWith</code>，以及更多的控制事件驱动程序流程的函数。这个函数工具集允许你完成更多功能而使用更少的代码。</p>
+<p>#接下来的事情</p>
+<p>如果你认为Rx*会成为你FRP的首选库，你需要花点时间来了解非常长的函数列表函数列表包括：变形、合并以及创建Observable。如果你想要通过流的图表来理解这些函数，<a href="https://github.com/Netflix/RxJava/wiki/Creating-Observables" target="_blank" rel="external">看一看RxJava的非常有用的文档</a>。无论什么时候你陷入困境，试着画出这些图，思考他们，看看这一长串的函数列表，然后更多的思考。以我的经验来看这个工作方法非常有效。</p>
+<p>一旦你开始使用Rx*开始编程，你绝对需要理解<a href="https://github.com/Reactive-Extensions/RxJS/blob/master/doc/gettingstarted/creating.md#cold-vs-hot-observables" target="_blank" rel="external">Cold vs Hot Observables</a>的内容。如果你忽略了它，它早晚会回来痛咬你的。我已经警告过你了。通过学习函数式编程进一步提高你的技巧，并熟悉影响Rx*的副作用。</p>
+<p>然而函数响应式编程并不仅仅是Rx*。你可以使用Bacon.js来直观的使用它，而不需要理会那些在使用Rx*时会遇到的奇怪的问题。Elm语言，则是自成一派：它是一个可以编译成JavaScript + HTML + CSS的FRP语言，还有一个时间浏览的调试器。它非常棒。</p>
+<p>FRP非常适合重事件的前端程序或应用程序。但是这并不仅仅是客户端的事情。它在后端以及贴近数据库的场景也能有很好的发挥。事实上，RxJava在Netflix的API中是一个允许服务器端进行并发执行的重要组件。FRP不是一个局限于特定类型的应用程序或者语言的框架。它是一个你在编写任何事件驱动软件时都可以使用的范例。</p>
+<p>如果这篇文章帮到了你，记得<a href="https://twitter.com/intent/tweet?original_referer=https%3A%2F%2Fgist.github.com%2Fstaltz%2F868e7e9bc2a7b8c1f754%2F&amp;text=The%20introduction%20to%20Reactive%20Programming%20you%27ve%20been%20missing&amp;tw_p=tweetbutton&amp;url=https%3A%2F%2Fgist.github.com%2Fstaltz%2F868e7e9bc2a7b8c1f754&amp;via=andrestaltz" target="_blank" rel="external">来Twitter转发</a>~</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/07/05/The-introduction-to-Reactive-Programming-you-ve-been-missing/" data-id="cirfvhfo5000mbknbsxn0b3ah" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-migrateToHexo" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2014/06/29/migrateToHexo/" class="article-date">
+  <time datetime="2014-06-30T05:46:31.000Z" itemprop="datePublished">2014-06-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog-hexo/2014/06/29/migrateToHexo/">migrateToHexo</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Just come to hexo, YaY~</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/06/29/migrateToHexo/" data-id="cirfvhfp40016bknbiy01097d" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+  <nav id="page-nav">
+    <a class="extend prev" rel="prev" href="/blog-hexo/">&laquo; __('prev')</a><a class="page-number" href="/blog-hexo/">1</a><span class="page-number current">2</span>
+  </nav>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Haskell/">Haskell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/NodeJS/">NodeJS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Translation/">Translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-async-translation/">generator async translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-translation/">generator translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/jison/">jison</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/js-generator-tanslation/">js, generator, tanslation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/blog-hexo/tags/Haskell/" style="font-size: 10px;">Haskell</a> <a href="/blog-hexo/tags/NodeJS/" style="font-size: 15px;">NodeJS</a> <a href="/blog-hexo/tags/Translation/" style="font-size: 10px;">Translation</a> <a href="/blog-hexo/tags/docker/" style="font-size: 10px;">docker</a> <a href="/blog-hexo/tags/generator-async-translation/" style="font-size: 10px;">generator async translation</a> <a href="/blog-hexo/tags/generator-translation/" style="font-size: 10px;">generator translation</a> <a href="/blog-hexo/tags/jison/" style="font-size: 15px;">jison</a> <a href="/blog-hexo/tags/js-generator-tanslation/" style="font-size: 10px;">js, generator, tanslation</a> <a href="/blog-hexo/tags/translation/" style="font-size: 20px;">translation</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/11/">November 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/10/">October 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/08/">August 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/07/">July 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/06/">June 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/blog-hexo/2016/08/03/fix-docker-x509-error/">fix-docker-x509-error</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/29/Parsing-text-table-with-jison-3/">Parsing-text-table-with-jison-3</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/28/Parsing-text-table-with-jison-2/">Parsing-text-table-with-jison-2</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/21/Parsing-text-table-with-jison/">Parsing-text-table-with-jison</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2015/10/31/Tail-Recursion-in-Haskell/">Tail Recursion in Haskell</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 Xiaochen Nie<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/blog-hexo/" class="mobile-nav-link">Home</a>
+  
+    <a href="/blog-hexo/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/blog-hexo/fancybox/jquery.fancybox.css">
+  <script src="/blog-hexo/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/blog-hexo/js/script.js"></script>
+
+  </div>
+</body>
+</html>
