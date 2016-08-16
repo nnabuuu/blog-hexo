@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>How many kinds of squares password | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="#
+上礼拜和yld吃饭，聊了聊最近的业内优秀开源项目以及算法方面的东西。yld表示自己当年能够用笔一字不改的手撕KMP算法，对现在功力的退步表示遗憾。然后闲聊之际yld掏出手机解锁，由此引申出一道算法题：九宫格密码到底有多少种？
+九宫格密码经过尝试，安卓系统的九宫格密码有这样一些限制条件，假设九宫格的布局如下：1231 2 34 5 67 8 9
+那么：
+
+至少使用4个点
+不能重复经过同一个点
+路">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How many kinds of squares password">
+<meta property="og:url" content="http://nnabuuu.github.io/blog-hexo/2016/08/15/How-many-kinds-of-squares-password/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="#
+上礼拜和yld吃饭，聊了聊最近的业内优秀开源项目以及算法方面的东西。yld表示自己当年能够用笔一字不改的手撕KMP算法，对现在功力的退步表示遗憾。然后闲聊之际yld掏出手机解锁，由此引申出一道算法题：九宫格密码到底有多少种？
+九宫格密码经过尝试，安卓系统的九宫格密码有这样一些限制条件，假设九宫格的布局如下：1231 2 34 5 67 8 9
+那么：
+
+至少使用4个点
+不能重复经过同一个点
+路">
+<meta property="og:updated_time" content="2016-08-16T06:49:59.913Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="How many kinds of squares password">
+<meta name="twitter:description" content="#
+上礼拜和yld吃饭，聊了聊最近的业内优秀开源项目以及算法方面的东西。yld表示自己当年能够用笔一字不改的手撕KMP算法，对现在功力的退步表示遗憾。然后闲聊之际yld掏出手机解锁，由此引申出一道算法题：九宫格密码到底有多少种？
+九宫格密码经过尝试，安卓系统的九宫格密码有这样一些限制条件，假设九宫格的布局如下：1231 2 34 5 67 8 9
+那么：
+
+至少使用4个点
+不能重复经过同一个点
+路">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/blog-hexo/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/blog-hexo/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/blog-hexo/">Home</a>
+        
+          <a class="main-nav-link" href="/blog-hexo/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://nnabuuu.github.io/blog-hexo"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-How-many-kinds-of-squares-password" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2016/08/15/How-many-kinds-of-squares-password/" class="article-date">
+  <time datetime="2016-08-16T05:45:14.000Z" itemprop="datePublished">2016-08-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      How many kinds of squares password
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#</p>
+<p>上礼拜和yld吃饭，聊了聊最近的业内优秀开源项目以及算法方面的东西。yld表示自己当年能够用笔一字不改的手撕KMP算法，对现在功力的退步表示遗憾。<br>然后闲聊之际yld掏出手机解锁，由此引申出一道算法题：九宫格密码到底有多少种？</p>
+<h1 id="九宫格密码"><a href="#九宫格密码" class="headerlink" title="九宫格密码"></a>九宫格密码</h1><p>经过尝试，安卓系统的九宫格密码有这样一些限制条件，假设九宫格的布局如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1 2 3</span><br><span class="line">4 5 6</span><br><span class="line">7 8 9</span><br></pre></td></tr></table></figure></p>
+<p>那么：</p>
+<ol>
+<li>至少使用4个点</li>
+<li>不能重复经过同一个点</li>
+<li>路径上的中间点不能跳过（例如 1 -&gt; 3 -&gt; 6 -&gt; 9 是不合法的，因为2被跳过了）</li>
+<li>如果中间的点之前已经用过，那么该点就可以被跳过（例如 2 -&gt; 1 -&gt; 3 -&gt; 6是合法的，因为在 1 -&gt; 3之前2已经被使用过）</li>
+</ol>
+<h1 id="首先考虑最简单的情况"><a href="#首先考虑最简单的情况" class="headerlink" title="首先考虑最简单的情况"></a>首先考虑最简单的情况</h1><p>首先只考虑条件1和条件2，那么这种排列组合的方式一共有<code>A(9, 4) + A(9, 5) + A(9, 6) + A(9, 7) + A(9, 8) + A(9, 9)</code>种。<br>当然，如果你就直接把这个答案写上去的话我们就没办法继续往下写了。所以我们还是用代码一个一个的数出来吧-。-</p>
+<p>（最近在学习scala，我用scala练习一下）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">object PasswordPermutation &#123;</span><br><span class="line"></span><br><span class="line">  //长度为m的排列组合</span><br><span class="line">  def password_permutation_with_length(n: Int, m: Int) = &#123;</span><br><span class="line"></span><br><span class="line">      def helper(llist: List[List[Int]], n:Int, m: Int): List[List[Int]] = &#123;</span><br><span class="line">        if(m == 0) llist</span><br><span class="line">        else &#123;</span><br><span class="line">          val pre_list = for(list &lt;- llist ; i &lt;- 1 to n; if(!list.contains(i))) yield</span><br><span class="line">              list ++ List(i)</span><br><span class="line">          helper(pre_list, n, m-1)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      helper(List(Nil), n, m)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  //满足条件1 2 的排列组合</span><br><span class="line">  def  password_permutation(n: Int) = (for(i &lt;- (4 to n).toList)</span><br><span class="line">                          yield password_permutation_with_length(n, i)).flatten</span><br><span class="line"></span><br><span class="line">  //测试</span><br><span class="line">  def main(args: Array[String]) &#123;</span><br><span class="line">    val result = password_permutation(9)</span><br><span class="line">    println(&quot;count:&quot; + result.length)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h1 id="然后加入限制条件"><a href="#然后加入限制条件" class="headerlink" title="然后加入限制条件"></a>然后加入限制条件</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">object PasswordPermutation &#123;</span><br><span class="line"></span><br><span class="line">  //所有规则3禁止的类别</span><br><span class="line">  val forbidden:Map[Int, List[Int]] = Map(</span><br><span class="line">    1 -&gt; List(3, 7, 9),</span><br><span class="line">    2 -&gt; List(8),</span><br><span class="line">    3 -&gt; List(1, 7, 9),</span><br><span class="line">    4 -&gt; List(6),</span><br><span class="line">    5 -&gt; Nil,</span><br><span class="line">    6 -&gt; List(4),</span><br><span class="line">    7 -&gt; List(1, 3, 9),</span><br><span class="line">    8 -&gt; List(2),</span><br><span class="line">    9 -&gt; List(1, 3, 7)</span><br><span class="line">  )</span><br><span class="line"></span><br><span class="line">  //规则3与规则4的限制条件</span><br><span class="line">  def is_forbidden(list: List[Int], i: Int) = &#123;</span><br><span class="line">    if(list isEmpty) false</span><br><span class="line">    else forbidden(list.last).contains(i) &amp;&amp; !list.contains((list.last + i)/2)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  //长度为m的排列组合（加入限制条件3 4）</span><br><span class="line">  def password_permutation_with_length(n: Int, m: Int) = &#123;</span><br><span class="line"></span><br><span class="line">      def helper(llist: List[List[Int]], n:Int, m: Int): List[List[Int]] = &#123;</span><br><span class="line">        if(m == 0) llist</span><br><span class="line">        else &#123;</span><br><span class="line">          val pre_list = for(list &lt;- llist ; i &lt;- 1 to n; if(!list.contains(i) &amp;&amp; !is_forbidden(list, i))) yield</span><br><span class="line">              list ++ List(i)</span><br><span class="line">          helper(pre_list, n, m-1)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      helper(List(Nil), n, m)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  //满足条件1 2 3 4的排列组合</span><br><span class="line">  def  password_permutation(n: Int) = (for(i &lt;- (4 to n).toList)</span><br><span class="line">                          yield password_permutation_with_length(n, i)).flatten</span><br><span class="line"></span><br><span class="line">  //测试</span><br><span class="line">  def main(args: Array[String]) &#123;</span><br><span class="line">    val result = password_permutation(9)</span><br><span class="line">    println(&quot;count:&quot; + result.length)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行得到结果:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">count:389112</span><br></pre></td></tr></table></figure></p>
+<h1 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h1><p>原来只是这么简单一道题目啊-。- 还以为发现了不得了的东西呢-。-</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2016/08/15/How-many-kinds-of-squares-password/" data-id="cirx40r2j0007scnbdk5g5kp7" class="article-share-link">Delen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/algorithm/">algorithm</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/blog-hexo/2016/08/03/fix-docker-x509-error/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">fix-docker-x509-error</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Haskell/">Haskell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/NodeJS/">NodeJS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Translation/">Translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/algorithm/">algorithm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-async-translation/">generator async translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-translation/">generator translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/jison/">jison</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/js-generator-tanslation/">js, generator, tanslation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/blog-hexo/tags/Haskell/" style="font-size: 10px;">Haskell</a> <a href="/blog-hexo/tags/NodeJS/" style="font-size: 15px;">NodeJS</a> <a href="/blog-hexo/tags/Translation/" style="font-size: 10px;">Translation</a> <a href="/blog-hexo/tags/algorithm/" style="font-size: 10px;">algorithm</a> <a href="/blog-hexo/tags/docker/" style="font-size: 10px;">docker</a> <a href="/blog-hexo/tags/generator-async-translation/" style="font-size: 10px;">generator async translation</a> <a href="/blog-hexo/tags/generator-translation/" style="font-size: 10px;">generator translation</a> <a href="/blog-hexo/tags/jison/" style="font-size: 15px;">jison</a> <a href="/blog-hexo/tags/js-generator-tanslation/" style="font-size: 10px;">js, generator, tanslation</a> <a href="/blog-hexo/tags/translation/" style="font-size: 20px;">translation</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/11/">November 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/10/">October 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/08/">August 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/07/">July 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/06/">June 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/blog-hexo/2016/08/15/How-many-kinds-of-squares-password/">How many kinds of squares password</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/08/03/fix-docker-x509-error/">fix-docker-x509-error</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/29/Parsing-text-table-with-jison-3/">Parsing-text-table-with-jison-3</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/28/Parsing-text-table-with-jison-2/">Parsing-text-table-with-jison-2</a>
+          </li>
+        
+          <li>
+            <a href="/blog-hexo/2016/04/21/Parsing-text-table-with-jison/">Parsing-text-table-with-jison</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 Xiaochen Nie<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/blog-hexo/" class="mobile-nav-link">Home</a>
+  
+    <a href="/blog-hexo/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/blog-hexo/fancybox/jquery.fancybox.css">
+  <script src="/blog-hexo/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/blog-hexo/js/script.js"></script>
+
+  </div>
+</body>
+</html>

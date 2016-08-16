@@ -53,7 +53,7 @@
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://nnabuuu.github.io/blog-hexo"></form>
@@ -63,6 +63,59 @@
 </header>
       <div class="outer">
         <section id="main">
+  
+    <article id="post-How-many-kinds-of-squares-password" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog-hexo/2016/08/15/How-many-kinds-of-squares-password/" class="article-date">
+  <time datetime="2016-08-16T05:45:14.000Z" itemprop="datePublished">2016-08-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog-hexo/2016/08/15/How-many-kinds-of-squares-password/">How many kinds of squares password</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#</p>
+<p>上礼拜和yld吃饭，聊了聊最近的业内优秀开源项目以及算法方面的东西。yld表示自己当年能够用笔一字不改的手撕KMP算法，对现在功力的退步表示遗憾。<br>然后闲聊之际yld掏出手机解锁，由此引申出一道算法题：九宫格密码到底有多少种？</p>
+<h1 id="九宫格密码"><a href="#九宫格密码" class="headerlink" title="九宫格密码"></a>九宫格密码</h1><p>经过尝试，安卓系统的九宫格密码有这样一些限制条件，假设九宫格的布局如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1 2 3</span><br><span class="line">4 5 6</span><br><span class="line">7 8 9</span><br></pre></td></tr></table></figure></p>
+<p>那么：</p>
+<ol>
+<li>至少使用4个点</li>
+<li>不能重复经过同一个点</li>
+<li>路径上的中间点不能跳过（例如 1 -&gt; 3 -&gt; 6 -&gt; 9 是不合法的，因为2被跳过了）</li>
+<li>如果中间的点之前已经用过，那么该点就可以被跳过（例如 2 -&gt; 1 -&gt; 3 -&gt; 6是合法的，因为在 1 -&gt; 3之前2已经被使用过）</li>
+</ol>
+<h1 id="首先考虑最简单的情况"><a href="#首先考虑最简单的情况" class="headerlink" title="首先考虑最简单的情况"></a>首先考虑最简单的情况</h1><p>首先只考虑条件1和条件2，那么这种排列组合的方式一共有<code>A(9, 4) + A(9, 5) + A(9, 6) + A(9, 7) + A(9, 8) + A(9, 9)</code>种。<br>当然，如果你就直接把这个答案写上去的话我们就没办法继续往下写了。所以我们还是用代码一个一个的数出来吧-。-</p>
+<p>（最近在学习scala，我用scala练习一下）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">object PasswordPermutation &#123;</span><br><span class="line"></span><br><span class="line">  //长度为m的排列组合</span><br><span class="line">  def password_permutation_with_length(n: Int, m: Int) = &#123;</span><br><span class="line"></span><br><span class="line">      def helper(llist: List[List[Int]], n:Int, m: Int): List[List[Int]] = &#123;</span><br><span class="line">        if(m == 0) llist</span><br><span class="line">        else &#123;</span><br><span class="line">          val pre_list = for(list &lt;- llist ; i &lt;- 1 to n; if(!list.contains(i))) yield</span><br><span class="line">              list ++ List(i)</span><br><span class="line">          helper(pre_list, n, m-1)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      helper(List(Nil), n, m)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  //满足条件1 2 的排列组合</span><br><span class="line">  def  password_permutation(n: Int) = (for(i &lt;- (4 to n).toList)</span><br><span class="line">                          yield password_permutation_with_length(n, i)).flatten</span><br><span class="line"></span><br><span class="line">  //测试</span><br><span class="line">  def main(args: Array[String]) &#123;</span><br><span class="line">    val result = password_permutation(9)</span><br><span class="line">    println(&quot;count:&quot; + result.length)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h1 id="然后加入限制条件"><a href="#然后加入限制条件" class="headerlink" title="然后加入限制条件"></a>然后加入限制条件</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">object PasswordPermutation &#123;</span><br><span class="line"></span><br><span class="line">  //所有规则3禁止的类别</span><br><span class="line">  val forbidden:Map[Int, List[Int]] = Map(</span><br><span class="line">    1 -&gt; List(3, 7, 9),</span><br><span class="line">    2 -&gt; List(8),</span><br><span class="line">    3 -&gt; List(1, 7, 9),</span><br><span class="line">    4 -&gt; List(6),</span><br><span class="line">    5 -&gt; Nil,</span><br><span class="line">    6 -&gt; List(4),</span><br><span class="line">    7 -&gt; List(1, 3, 9),</span><br><span class="line">    8 -&gt; List(2),</span><br><span class="line">    9 -&gt; List(1, 3, 7)</span><br><span class="line">  )</span><br><span class="line"></span><br><span class="line">  //规则3与规则4的限制条件</span><br><span class="line">  def is_forbidden(list: List[Int], i: Int) = &#123;</span><br><span class="line">    if(list isEmpty) false</span><br><span class="line">    else forbidden(list.last).contains(i) &amp;&amp; !list.contains((list.last + i)/2)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  //长度为m的排列组合（加入限制条件3 4）</span><br><span class="line">  def password_permutation_with_length(n: Int, m: Int) = &#123;</span><br><span class="line"></span><br><span class="line">      def helper(llist: List[List[Int]], n:Int, m: Int): List[List[Int]] = &#123;</span><br><span class="line">        if(m == 0) llist</span><br><span class="line">        else &#123;</span><br><span class="line">          val pre_list = for(list &lt;- llist ; i &lt;- 1 to n; if(!list.contains(i) &amp;&amp; !is_forbidden(list, i))) yield</span><br><span class="line">              list ++ List(i)</span><br><span class="line">          helper(pre_list, n, m-1)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      helper(List(Nil), n, m)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  //满足条件1 2 3 4的排列组合</span><br><span class="line">  def  password_permutation(n: Int) = (for(i &lt;- (4 to n).toList)</span><br><span class="line">                          yield password_permutation_with_length(n, i)).flatten</span><br><span class="line"></span><br><span class="line">  //测试</span><br><span class="line">  def main(args: Array[String]) &#123;</span><br><span class="line">    val result = password_permutation(9)</span><br><span class="line">    println(&quot;count:&quot; + result.length)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行得到结果:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">count:389112</span><br></pre></td></tr></table></figure></p>
+<h1 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h1><p>原来只是这么简单一道题目啊-。- 还以为发现了不得了的东西呢-。-</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2016/08/15/How-many-kinds-of-squares-password/" data-id="cirx40r2j0007scnbdk5g5kp7" class="article-share-link">Delen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/algorithm/">algorithm</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
   
     <article id="post-fix-docker-x509-error" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -103,7 +156,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2016/08/03/fix-docker-x509-error/" data-id="cirfvhfp10014bknb4a9l4xt7" class="article-share-link">Share</a>
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2016/08/03/fix-docker-x509-error/" data-id="cirx40r4i000sscnbk5s36vbq" class="article-share-link">Delen</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/docker/">docker</a></li></ul>
@@ -141,7 +194,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2016/04/29/Parsing-text-table-with-jison-3/" data-id="cirfvhfno0008bknb6dgn997g" class="article-share-link">Share</a>
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2016/04/29/Parsing-text-table-with-jison-3/" data-id="cirx40r3i000gscnbe8cev9h5" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -196,7 +249,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2016/04/28/Parsing-text-table-with-jison-2/" data-id="cirfvhfnx000gbknb4f835p9g" class="article-share-link">Share</a>
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2016/04/28/Parsing-text-table-with-jison-2/" data-id="cirx40r36000ascnbzmegvz4c" class="article-share-link">Delen</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/NodeJS/">NodeJS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/jison/">jison</a></li></ul>
@@ -260,7 +313,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2016/04/21/Parsing-text-table-with-jison/" data-id="cirfvhfnv000ebknbfagezfmz" class="article-share-link">Share</a>
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2016/04/21/Parsing-text-table-with-jison/" data-id="cirx40r3f000escnbdke6pdb5" class="article-share-link">Delen</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/NodeJS/">NodeJS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/jison/">jison</a></li></ul>
@@ -310,7 +363,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2015/10/31/Tail-Recursion-in-Haskell/" data-id="cirfvhfoc000rbknb4oy9cnwr" class="article-share-link">Share</a>
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2015/10/31/Tail-Recursion-in-Haskell/" data-id="cirx40r4p000vscnb3v8awkyo" class="article-share-link">Delen</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/Haskell/">Haskell</a></li></ul>
@@ -452,7 +505,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2015/01/04/Getting-Concurrent-With-ES6-Generators/" data-id="cirfvhfn30002bknbkxatucdf" class="article-share-link">Share</a>
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2015/01/04/Getting-Concurrent-With-ES6-Generators/" data-id="cirx40r200002scnbit5xplhf" class="article-share-link">Delen</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/generator-translation/">generator translation</a></li></ul>
@@ -603,7 +656,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/12/26/Going-Async-With-ES6-Generators/" data-id="cirfvhfng0005bknbmd46vea0" class="article-share-link">Share</a>
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/12/26/Going-Async-With-ES6-Generators/" data-id="cirx40r1v0001scnbzj31ovfo" class="article-share-link">Delen</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/generator-async-translation/">generator async translation</a></li></ul>
@@ -684,7 +737,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/12/24/Diving-Deeper-With-ES6-Generators/" data-id="cirfvhfn00001bknbbrehgf4f" class="article-share-link">Share</a>
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/12/24/Diving-Deeper-With-ES6-Generators/" data-id="cirx40r2b0004scnba134klxt" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -805,95 +858,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/12/21/The-Basics-Of-ES6-Generators/" data-id="cirfvhfo0000ibknbzqccl59s" class="article-share-link">Share</a>
+      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/12/21/The-Basics-Of-ES6-Generators/" data-id="cirx40r3n000iscnbwrttr8wg" class="article-share-link">Delen</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/js-generator-tanslation/">js, generator, tanslation</a></li></ul>
 
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Getting-Started-with-Koa,-part-2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog-hexo/2014/12/06/Getting-Started-with-Koa,-part-2/" class="article-date">
-  <time datetime="2014-12-07T06:37:41.000Z" itemprop="datePublished">2014-12-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog-hexo/2014/12/06/Getting-Started-with-Koa,-part-2/">Getting Started with Koa, part 2</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>#开始使用Koa，第二部分（译）</p>
-<p><a href="http://blog.risingstack.com/getting-started-with-koa-part-2/" target="_blank" rel="external">http://blog.risingstack.com/getting-started-with-koa-part-2/</a></p>
-<p>原作者： Gellért Hegyi <a href="https://twitter.com/native_cat" target="_blank" rel="external">https://twitter.com/native_cat</a></p>
-<p>在<a href="http://blog.risingstack.com/introduction-to-koa-generators/" target="_blank" rel="external">上一节</a>我们掌握了generators并且明白了一点，那就是我们可以<strong>以同步的形式编写代码而异步的执行</strong>。这非常棒，因为同步代码非常简单，优雅而且具有更好的可读性，而异步代码可能会导致“尖叫”与“哭泣”（回调地狱）。</p>
-<p>这一章将讲述解决这个痛苦的工具，这样我们就可以只编写那些有趣的部分。它会给予基本Koa特性和机制的介绍。</p>
-<h2 id="前述"><a href="#前述" class="headerlink" title="前述"></a>前述</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// First part</span></span><br><span class="line"><span class="keyword">var</span> thunkify = <span class="built_in">require</span>(<span class="string">'thunkify'</span>);</span><br><span class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</span><br><span class="line"><span class="keyword">var</span> read = thunkify(fs.readFile);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// Second part</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">bar</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> x = <span class="keyword">yield</span> read(<span class="string">'input.txt'</span>);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(err);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">console</span>.log(x);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// Third part</span></span><br><span class="line"><span class="keyword">var</span> gen = bar();</span><br><span class="line">gen.next().value(<span class="function"><span class="keyword">function</span> (<span class="params">err, data</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (err) &#123;</span><br><span class="line">    gen.throw(err);</span><br><span class="line">  &#125;</span><br><span class="line">  gen.next(data.toString());</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<p>在上一篇文章的最后一个例子里，如你所见，我们可以将其分为3个重要地部分。第一是我们必须创造我们的<strong>thunkified functions</strong>，它会被用在一个generator中。然后我们必须使用thunkified functions编写我们的<strong>generator functions</strong>。最后一个部分是我们调用并遍历generators，处理异常以及其他。如果你想一想你会发现，最有一部分和我们程序的本质并没有什么关系，基本上它让我们运行一个generator。幸运地是，有一个模块帮我们这样做。来见一见<strong>co</strong>。</p>
-<h2 id="CO"><a href="#CO" class="headerlink" title="CO"></a>CO</h2><p><a href="https://github.com/visionmedia/co" target="_blank" rel="external"><strong>Co</strong></a>是一个node的基于generator的流程控制模块。下面的代码和上面做的事情完全一样，但是我们摆脱了调用generator的代码。唯一我们需要做的事情，是<strong>将generator传递给一个函数<code>co</code></strong>,<strong>调用它</strong>，然后魔力就发生了。好吧，其实并不是什么魔力，它只是为你处理所有的generator调用代码，因此我们不需要为那操心了。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> co = <span class="built_in">require</span>(<span class="string">'co'</span>);</span><br><span class="line"><span class="keyword">var</span> thunkify = <span class="built_in">require</span>(<span class="string">'thunkify'</span>);</span><br><span class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</span><br><span class="line"> </span><br><span class="line"><span class="keyword">var</span> read = thunkify(fs.readFile);</span><br><span class="line"> </span><br><span class="line">co(<span class="function"><span class="keyword">function</span> *<span class="title">bar</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> x = <span class="keyword">yield</span> read(<span class="string">'input.txt'</span>);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(err);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">console</span>.log(x);</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
-<p>就像我们已经知道的那样，你可以防止一个<code>yield</code>z在任何东西之前来<strong>对一些东西进行评价</strong>。因此并不是只有<em>trunks</em>可以被<code>yield</code>。因为<code>co</code>想要创建一个简单的控制流，它对一些特殊的类型进行yield。当前<strong>支持yield的类型</strong>：</p>
-<ul>
-<li>thunks（函数)</li>
-<li>array （并发执行）</li>
-<li>objects （并发执行）</li>
-<li>generators （代理）</li>
-<li>generator functions （代理）</li>
-<li>promises</li>
-</ul>
-<p>我们已经讨论过<strong>thunks</strong>是如何工作的了，因此让我们去看看其他的。</p>
-<h2 id="并发执行"><a href="#并发执行" class="headerlink" title="并发执行"></a>并发执行</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> read = thunkify(fs.readFile);</span><br><span class="line"> </span><br><span class="line">co(<span class="function"><span class="keyword">function</span> *(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 3 concurrent reads</span></span><br><span class="line">  <span class="keyword">var</span> reads = <span class="keyword">yield</span> [read(<span class="string">'input.txt'</span>), read(<span class="string">'input.txt'</span>), read(<span class="string">'input.txt'</span>)];</span><br><span class="line">  <span class="built_in">console</span>.log(reads);</span><br><span class="line"> </span><br><span class="line">  <span class="comment">// 2 concurrent reads</span></span><br><span class="line">  reads = <span class="keyword">yield</span> &#123; a: read(<span class="string">'input.txt'</span>), b: read(<span class="string">'input.txt'</span>) &#125;;</span><br><span class="line">  <span class="built_in">console</span>.log(reads);</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
-<p>如果你<code>yield</code>一个数组或一个对象，它将<strong>并行地评估它的内容</strong>。当然你的集合也可以是<code>thunks</code>、<code>generators</code>。你可以<strong>nest</strong>，它会穿过数组或者对象并发执行你所有的函数。<strong>注意</strong>：被yield的结果不会是展开的，它会保留同样的结构。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> read = thunkify(fs.readFile);</span><br><span class="line"> </span><br><span class="line">co(<span class="function"><span class="keyword">function</span> *(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> a = [read(<span class="string">'input.txt'</span>), read(<span class="string">'input.txt'</span>)];</span><br><span class="line">  <span class="keyword">var</span> b = [read(<span class="string">'input.txt'</span>), read(<span class="string">'input.txt'</span>)];</span><br><span class="line"> </span><br><span class="line">  <span class="comment">// 4 concurrent reads</span></span><br><span class="line">  <span class="keyword">var</span> files = <span class="keyword">yield</span> [a, b];</span><br><span class="line">  </span><br><span class="line">  <span class="built_in">console</span>.log(files);</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
-<p>你也可以通过在thunk的调用<strong>之后</strong>进行yield实现并发。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> read = thunkify(fs.readFile);</span><br><span class="line"> </span><br><span class="line">co(<span class="function"><span class="keyword">function</span> *(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> a = read(<span class="string">'input.txt'</span>);</span><br><span class="line">  <span class="keyword">var</span> b = read(<span class="string">'input.txt'</span>);</span><br><span class="line"> </span><br><span class="line">  <span class="comment">// 2 concurrent reads</span></span><br><span class="line">  <span class="built_in">console</span>.log([<span class="keyword">yield</span> a, <span class="keyword">yield</span> b]);</span><br><span class="line"> </span><br><span class="line">  <span class="comment">// or</span></span><br><span class="line"> </span><br><span class="line">  <span class="comment">// 2 concurrent reads</span></span><br><span class="line">  <span class="built_in">console</span>.log(<span class="keyword">yield</span> [a, b]);</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
-<h2 id="代理"><a href="#代理" class="headerlink" title="代理"></a>代理</h2><p>你当然也可以yield generators。注意我们并不需要使用<code>yield *</code>。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> stat = thunkify(fs.stat);</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">size</span> (<span class="params">file</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> s = <span class="keyword">yield</span> stat(file);</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">return</span> s.size;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">co(<span class="function"><span class="keyword">function</span> *(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> f = <span class="keyword">yield</span> size(<span class="string">'input.txt'</span>);</span><br><span class="line"> </span><br><span class="line">  <span class="built_in">console</span>.log(f);</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
-<p>我们过一下产不多所有你使用<code>co</code>时进行yield的可能性。这里有一个最新的示例（取自于co的<a href="https://github.com/visionmedia/co" target="_blank" rel="external">github页面</a>）把它们结合起来。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> co = <span class="built_in">require</span>(<span class="string">'co'</span>);</span><br><span class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">size</span> (<span class="params">file</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params">fn</span>) </span>&#123;</span><br><span class="line">    fs.stat(file, <span class="function"><span class="keyword">function</span>(<span class="params">err, stat</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (err) <span class="keyword">return</span> fn(err);</span><br><span class="line">      fn(<span class="literal">null</span>, stat.size);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> a = <span class="keyword">yield</span> size(<span class="string">'un.txt'</span>);</span><br><span class="line">  <span class="keyword">var</span> b = <span class="keyword">yield</span> size(<span class="string">'deux.txt'</span>);</span><br><span class="line">  <span class="keyword">var</span> c = <span class="keyword">yield</span> size(<span class="string">'trois.txt'</span>);</span><br><span class="line">  <span class="keyword">return</span> [a, b, c];</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">bar</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> a = <span class="keyword">yield</span> size(<span class="string">'quatre.txt'</span>);</span><br><span class="line">  <span class="keyword">var</span> b = <span class="keyword">yield</span> size(<span class="string">'cinq.txt'</span>);</span><br><span class="line">  <span class="keyword">var</span> c = <span class="keyword">yield</span> size(<span class="string">'six.txt'</span>);</span><br><span class="line">  <span class="keyword">return</span> [a, b, c];</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">co(<span class="function"><span class="keyword">function</span> *(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> results = <span class="keyword">yield</span> [foo(), bar()];</span><br><span class="line">  <span class="built_in">console</span>.log(results);</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
-<p>我相信现在你已经足够掌握generators了，你已有有了一个关于如何使用这些工具操作<strong>异步控制流</strong>的很好的概念。</p>
-<p>现在是时候转到我们整个系列的主题，<strong>Koa</strong>了！</p>
-<h2 id="Koa"><a href="#Koa" class="headerlink" title="Koa"></a>Koa</h2><p>你所需要知道的，关于<code>koa</code>模块自身的信息并没有多少。你甚至可以看它的源码，只有4个文件，每个文件约300行。Koa遵循你写的每个程序都只做并且做好一件事情的传统。因此你会看到，每个好的koa模块都是（并且每个node模块都应该是）简短的。只做一件事情并且重度依赖于其他模块。你应该记住这些并且依照它进行开发。它会有利于每个人，你以及其他阅读你源代码的人。记住这一点然后让我们移动到Koa的主要特性。</p>
-<h2 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> koa = <span class="built_in">require</span>(<span class="string">'koa'</span>);</span><br><span class="line"><span class="keyword">var</span> app = koa();</span><br></pre></td></tr></table></figure>
-<p>创建一个Koa应用只是简单的引入模块函数。这提供给你一个对象，它包含了一个generators（中间件）的数组，对一个新的请求以类似栈的方式进行执行。</p>
-<h2 id="级联"><a href="#级联" class="headerlink" title="级联"></a>级联</h2><p>一个重要的术语，当使用Koa时，它指的是<strong>中间件</strong>。因此让我们先弄清楚这个。</p>
-<p>Koa中的中间件是处理请求的函数。一个由Koa创建的服务器可以有一个与它关联的中间件的栈。</p>
-<p>Koa中的级联的意思是，控制流穿过一系列的中间件。在Web开发中这是非常重要的，你可以简单地用这种方式构造复杂的行为。Koa使用generator非常直观并且简洁地实现它。<strong>它yield下游，然后控制流程回到上游</strong>。要向流程中添加一个generator，调用<code>use</code>函数并传入一个generator。试着猜猜看为什么下面的代码对每一个到达的请求产生<code>A, B, C, D, E</code>的输出！</p>
-<p>这是一个服务器，因此<code>listen</code>函数进行你所认为的行为，它监听一个特殊的端口。（它的参数和纯node的<code>listen</code>方法是一样的）。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">app.use(<span class="function"><span class="keyword">function</span> *(<span class="params">next</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'A'</span>);</span><br><span class="line">  <span class="keyword">yield</span> next;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'E'</span>);</span><br><span class="line">&#125;);</span><br><span class="line"> </span><br><span class="line">app.use(<span class="function"><span class="keyword">function</span> *(<span class="params">next</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'B'</span>);</span><br><span class="line">  <span class="keyword">yield</span> next;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'D'</span>);</span><br><span class="line">&#125;);</span><br><span class="line"> </span><br><span class="line">app.use(<span class="function"><span class="keyword">function</span> *(<span class="params">next</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'C'</span>);</span><br><span class="line">&#125;);</span><br><span class="line"> </span><br><span class="line">app.listen(<span class="number">3000</span>);</span><br></pre></td></tr></table></figure>
-<p>当一个新的请求到达时，它开始流经中间件，以你所编写的顺序执行。因此在示例中，请求触发了第一个中间件，它输出<code>A</code>，然后到达<code>yield next</code>。<strong>当一个中间件到达<code>yield next</code>，它会走向下一个中间件直到离开。</strong>因此我们到达第二个中间件它输出<code>B</code>。然后又跳转到最后一个<code>C</code>。没有更多的中间件了，我们完成了<strong>下游流程</strong>，现在我们开始返回到之前的中间件（就像一个栈），<code>D</code>。然后第一个中间件结束，<code>F</code>，然后我们成功的完成了上游。</p>
-<p>在这一点上，<code>koa</code>模块自身并没有包含任何其他的复杂性 - 因此我们不拷贝/粘贴已经很完备的<a href="http://koajs.com/" target="_blank" rel="external">Koa站点</a>的文档，你可以再那里阅读。这里是这些部分的链接：</p>
-<p><a href="http://koajs.com/#context" target="_blank" rel="external">Context</a></p>
-<p><a href="http://koajs.com/#request" target="_blank" rel="external">Request</a></p>
-<p><a href="http://koajs.com/#response" target="_blank" rel="external">Response</a></p>
-<p><a href="http://koajs.com/#settings" target="_blank" rel="external">Others</a></p>
-<p>让我们看一个例子（也是来自于Koa的站点），它使用而来HTTP功能。第一个中间件计算响应时间。看看你能够多么容易地接触到响应的开始和结束，多么优雅地分离这些函数行为。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">app.use(<span class="function"><span class="keyword">function</span> *(<span class="params">next</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> start = <span class="keyword">new</span> <span class="built_in">Date</span>;</span><br><span class="line">  <span class="keyword">yield</span> next;</span><br><span class="line">  <span class="keyword">var</span> ms = <span class="keyword">new</span> <span class="built_in">Date</span> - start;</span><br><span class="line">  <span class="keyword">this</span>.set(<span class="string">'X-Response-Time'</span>, ms + <span class="string">'ms'</span>);</span><br><span class="line">&#125;);</span><br><span class="line"> </span><br><span class="line">app.use(<span class="function"><span class="keyword">function</span> *(<span class="params">next</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> start = <span class="keyword">new</span> <span class="built_in">Date</span>;</span><br><span class="line">  <span class="keyword">yield</span> next;</span><br><span class="line">  <span class="keyword">var</span> ms = <span class="keyword">new</span> <span class="built_in">Date</span> - start;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'%s %s - %s'</span>, <span class="keyword">this</span>.method, <span class="keyword">this</span>.url, ms);</span><br><span class="line">&#125;);</span><br><span class="line"> </span><br><span class="line">app.use(<span class="function"><span class="keyword">function</span> *(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.body = <span class="string">'Hello World'</span>;</span><br><span class="line">&#125;);</span><br><span class="line"> </span><br><span class="line">app.listen(<span class="number">3000</span>);</span><br></pre></td></tr></table></figure>
-<h2 id="完成"><a href="#完成" class="headerlink" title="完成"></a>完成</h2><p>现在你已经熟悉Koa的核心了，你可以说你的旧web框架已经做了所有其他有用的事情并且你需要它们。但是也请记住那里还有数以万计的功能你从未使用过，或者还有一些工作并未按照你想象的方式工作。这就是Koa以及现代node框架好的方面。<strong>你可以从<code>npm</code>中以简短模块的方式向你的应用添加需要的功能，并且它会完全按照你需要的方式运行。</strong></p>
-<p>在下一章，我们会看到，使用Koa以上述哲学创建一个网站是多么简单。再那之后，再使用这些你已经了解的知识来感受一下Koa和它的自然感吧。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://nnabuuu.github.io/blog-hexo/blog-hexo/2014/12/06/Getting-Started-with-Koa,-part-2/" data-id="cirfvhfnh0006bknbf9hym1ep" class="article-share-link">Share</a>
-      
-      
     </footer>
   </div>
   
@@ -915,9 +884,9 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">Labels</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Haskell/">Haskell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/NodeJS/">NodeJS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Translation/">Translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-async-translation/">generator async translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-translation/">generator translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/jison/">jison</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/js-generator-tanslation/">js, generator, tanslation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Haskell/">Haskell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/NodeJS/">NodeJS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/Translation/">Translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/algorithm/">algorithm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-async-translation/">generator async translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/generator-translation/">generator translation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/jison/">jison</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/js-generator-tanslation/">js, generator, tanslation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/blog-hexo/tags/translation/">translation</a></li></ul>
     </div>
   </div>
 
@@ -927,14 +896,14 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/blog-hexo/tags/Haskell/" style="font-size: 10px;">Haskell</a> <a href="/blog-hexo/tags/NodeJS/" style="font-size: 15px;">NodeJS</a> <a href="/blog-hexo/tags/Translation/" style="font-size: 10px;">Translation</a> <a href="/blog-hexo/tags/docker/" style="font-size: 10px;">docker</a> <a href="/blog-hexo/tags/generator-async-translation/" style="font-size: 10px;">generator async translation</a> <a href="/blog-hexo/tags/generator-translation/" style="font-size: 10px;">generator translation</a> <a href="/blog-hexo/tags/jison/" style="font-size: 15px;">jison</a> <a href="/blog-hexo/tags/js-generator-tanslation/" style="font-size: 10px;">js, generator, tanslation</a> <a href="/blog-hexo/tags/translation/" style="font-size: 20px;">translation</a>
+      <a href="/blog-hexo/tags/Haskell/" style="font-size: 10px;">Haskell</a> <a href="/blog-hexo/tags/NodeJS/" style="font-size: 15px;">NodeJS</a> <a href="/blog-hexo/tags/Translation/" style="font-size: 10px;">Translation</a> <a href="/blog-hexo/tags/algorithm/" style="font-size: 10px;">algorithm</a> <a href="/blog-hexo/tags/docker/" style="font-size: 10px;">docker</a> <a href="/blog-hexo/tags/generator-async-translation/" style="font-size: 10px;">generator async translation</a> <a href="/blog-hexo/tags/generator-translation/" style="font-size: 10px;">generator translation</a> <a href="/blog-hexo/tags/jison/" style="font-size: 15px;">jison</a> <a href="/blog-hexo/tags/js-generator-tanslation/" style="font-size: 10px;">js, generator, tanslation</a> <a href="/blog-hexo/tags/translation/" style="font-size: 20px;">translation</a>
     </div>
   </div>
 
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
+    <h3 class="widget-title">Archieven</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/11/">November 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/10/">October 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/08/">August 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/07/">July 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/blog-hexo/archives/2014/06/">June 2014</a></li></ul>
     </div>
@@ -944,9 +913,13 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Recente berichten</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/blog-hexo/2016/08/15/How-many-kinds-of-squares-password/">How many kinds of squares password</a>
+          </li>
         
           <li>
             <a href="/blog-hexo/2016/08/03/fix-docker-x509-error/">fix-docker-x509-error</a>
@@ -962,10 +935,6 @@
         
           <li>
             <a href="/blog-hexo/2016/04/21/Parsing-text-table-with-jison/">Parsing-text-table-with-jison</a>
-          </li>
-        
-          <li>
-            <a href="/blog-hexo/2015/10/31/Tail-Recursion-in-Haskell/">Tail Recursion in Haskell</a>
           </li>
         
       </ul>
